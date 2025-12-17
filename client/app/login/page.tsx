@@ -8,7 +8,7 @@ import Divider from '@/components/login/Divider';
 import SocialLoginButtons from '@/components/login/SocialLoginButtons';
 import SignUpLink from '@/components/login/SignUpLink';
 
-export default function HomePage() {
+export default function LoginPage() {
   const router = useRouter();
 
   const handleSubmit = (email: string, password: string) => {
@@ -46,3 +46,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+
