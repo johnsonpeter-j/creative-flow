@@ -25,8 +25,8 @@ export default function OnboardingPage() {
         typography: data.typography,
         colorPalette: data.colorPalette,
       });
-      // After successful submission, redirect to dashboard or next step
-      // router.push('/dashboard');
+      // After successful submission, redirect to campaign or next step
+      // router.push('/campaign');
     } catch (error) {
       // Error is already handled by the API function with toast notification
       console.error('Onboarding submission failed:', error);
