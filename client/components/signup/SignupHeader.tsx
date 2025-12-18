@@ -3,14 +3,38 @@ import { UserPlus } from 'lucide-react';
 
 export default function SignupHeader() {
   return (
-    <div className="text-center mb-8">
-      <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg transform transition-transform hover:scale-105">
-        <UserPlus className="w-10 h-10 text-white" />
+    <div className="text-center mb-10 animate-fade-in">
+      <div 
+        className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6 transform transition-all duration-300 hover:scale-110 hover:rotate-3"
+        style={{ 
+          backgroundColor: 'var(--color-frame)',
+          boxShadow: '0 8px 24px rgba(198, 124, 78, 0.3)',
+        }}
+      >
+        <UserPlus className="w-8 h-8" style={{ color: 'var(--color-background)' }} />
       </div>
-      <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+      <h1 
+        className="font-bold mb-2 tracking-tight"
+        style={{ 
+          color: 'var(--color-frame)',
+          letterSpacing: '-0.02em',
+          fontSize: 'clamp(24px, 3vw + 0.5rem, 28px)',
+          fontFamily: 'var(--font-roboto), sans-serif',
+        }}
+      >
         Creative Flow
       </h1>
-      <p className="text-gray-600 mt-2 text-sm">Create your account and start your creative journey.</p>
+      <p 
+        className="mt-3 font-medium" 
+        style={{ 
+          color: 'var(--color-text)', 
+          opacity: 0.65,
+          fontSize: 'clamp(11px, 1vw + 0.5rem, 13px)',
+          fontFamily: 'var(--font-inter), sans-serif',
+        }}
+      >
+        Create your account and start your creative journey.
+      </p>
     </div>
   );
 }

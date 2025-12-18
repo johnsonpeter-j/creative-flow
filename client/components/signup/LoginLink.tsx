@@ -8,11 +8,30 @@ interface LoginLinkProps {
 
 export default function LoginLink({ onLoginClick }: LoginLinkProps) {
   return (
-    <p className="text-center text-sm text-gray-600 mt-8">
+    <p className="text-center mt-8 pt-6 border-t" style={{
+      color: 'var(--color-text)',
+      opacity: 0.65,
+      borderColor: 'rgba(198, 124, 78, 0.15)',
+      fontSize: 'clamp(11px, 1vw + 0.5rem, 13px)',
+      fontFamily: 'var(--font-inter), sans-serif',
+    }}>
       Already have an account?{' '}
       <button
         onClick={onLoginClick}
-        className="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors underline decoration-2 underline-offset-2 cursor-pointer"
+        className="font-semibold transition-all duration-200 hover:underline underline-offset-4 cursor-pointer"
+        style={{ 
+          color: 'var(--color-frame)',
+          fontSize: 'clamp(11px, 1vw + 0.5rem, 13px)',
+          fontFamily: 'var(--font-inter), sans-serif',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '0.85';
+          e.currentTarget.style.transform = 'translateY(-1px)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '1';
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
       >
         Sign in
       </button>

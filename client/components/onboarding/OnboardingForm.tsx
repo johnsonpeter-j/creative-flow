@@ -195,7 +195,7 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
               errors.brandName 
                 ? 'text-red-500' 
                 : isFocused.brandName 
-                  ? 'text-indigo-600' 
+                  ? '' 
                   : 'text-gray-400 group-hover:text-gray-600'
             }`} 
           />
@@ -211,11 +211,21 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             }}
             onFocus={() => setIsFocused({ ...isFocused, brandName: true })}
             onBlur={() => setIsFocused({ ...isFocused, brandName: false })}
-            className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 ${
+            className={`input-elegant w-full pl-11 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-300 ${
               errors.brandName
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                : 'border-gray-200 focus:ring-indigo-500 focus:border-indigo-500'
+                ? 'border-red-300 focus:border-red-500'
+                : 'border-transparent'
             }`}
+            style={errors.brandName ? {
+              backgroundColor: 'rgba(239, 68, 68, 0.05)',
+              borderColor: '#fca5a5',
+              color: 'var(--color-text)',
+            } : {
+              backgroundColor: 'rgba(237, 237, 237, 0.6)',
+              borderColor: isFocused.brandName ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)',
+              color: 'var(--color-text)',
+              boxShadow: isFocused.brandName ? '0 4px 20px rgba(198, 124, 78, 0.12)' : '0 2px 8px rgba(49, 49, 49, 0.05)',
+            }}
             placeholder="Enter your brand name"
           />
         </div>
@@ -237,7 +247,7 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
               errors.industry 
                 ? 'text-red-500' 
                 : isFocused.industry 
-                  ? 'text-indigo-600' 
+                  ? '' 
                   : 'text-gray-400 group-hover:text-gray-600'
             }`} 
           />
@@ -253,11 +263,21 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             }}
             onFocus={() => setIsFocused({ ...isFocused, industry: true })}
             onBlur={() => setIsFocused({ ...isFocused, industry: false })}
-            className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 ${
+            className={`input-elegant w-full pl-11 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-300 ${
               errors.industry
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                : 'border-gray-200 focus:ring-indigo-500 focus:border-indigo-500'
+                ? 'border-red-300 focus:border-red-500'
+                : 'border-transparent'
             }`}
+            style={errors.industry ? {
+              backgroundColor: 'rgba(239, 68, 68, 0.05)',
+              borderColor: '#fca5a5',
+              color: 'var(--color-text)',
+            } : {
+              backgroundColor: 'rgba(237, 237, 237, 0.6)',
+              borderColor: isFocused.industry ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)',
+              color: 'var(--color-text)',
+              boxShadow: isFocused.industry ? '0 4px 20px rgba(198, 124, 78, 0.12)' : '0 2px 8px rgba(49, 49, 49, 0.05)',
+            }}
             placeholder="e.g., Technology, Fashion, Food & Beverage"
           />
         </div>
@@ -331,9 +351,15 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             type="button"
             id="logoPosition"
             onClick={() => setIsLogoPositionOpen(!isLogoPositionOpen)}
-            className={`w-full pl-11 pr-10 py-3 border-2 rounded-xl focus:ring-2 outline-none transition-all duration-200 bg-gray-50 text-left text-gray-900 border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer hover:bg-white ${
-              isLogoPositionOpen ? 'bg-white border-indigo-500 ring-2 ring-indigo-500' : ''
+            className={`w-full pl-11 pr-10 py-3 border-2 rounded-xl outline-none transition-all duration-200 bg-gray-50 text-left text-gray-900 cursor-pointer hover:bg-white ${
+              isLogoPositionOpen ? 'bg-white' : ''
             }`}
+            style={isLogoPositionOpen ? {
+              borderColor: 'var(--color-frame)',
+              boxShadow: '0 0 0 2px rgba(198, 124, 78, 0.2)',
+            } : {
+              borderColor: 'rgba(198, 124, 78, 0.2)',
+            }}
           >
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2">
@@ -394,7 +420,7 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
               errors.typography 
                 ? 'text-red-500' 
                 : isFocused.typography 
-                  ? 'text-indigo-600' 
+                  ? '' 
                   : 'text-gray-400 group-hover:text-gray-600'
             }`} 
           />
@@ -410,11 +436,21 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             onFocus={() => setIsFocused({ ...isFocused, typography: true })}
             onBlur={() => setIsFocused({ ...isFocused, typography: false })}
             rows={3}
-            className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:ring-2 outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 resize-none ${
+            className={`input-elegant w-full pl-11 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-300 resize-none ${
               errors.typography
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                : 'border-gray-200 focus:ring-indigo-500 focus:border-indigo-500'
+                ? 'border-red-300 focus:border-red-500'
+                : 'border-transparent'
             }`}
+            style={errors.typography ? {
+              backgroundColor: 'rgba(239, 68, 68, 0.05)',
+              borderColor: '#fca5a5',
+              color: 'var(--color-text)',
+            } : {
+              backgroundColor: 'rgba(237, 237, 237, 0.6)',
+              borderColor: isFocused.typography ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)',
+              color: 'var(--color-text)',
+              boxShadow: isFocused.typography ? '0 4px 20px rgba(198, 124, 78, 0.12)' : '0 2px 8px rgba(49, 49, 49, 0.05)',
+            }}
             placeholder='e.g., &lt;link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"&gt;'
           />
         </div>
@@ -475,7 +511,12 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
       {/* Submit Button */}
       <button
         type="submit"
-        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 mt-8"
+        className="btn-elegant w-full py-3.5 rounded-xl font-semibold text-base tracking-wide relative overflow-hidden mt-8"
+        style={{
+          backgroundColor: 'var(--color-frame)',
+          color: 'var(--color-background)',
+          boxShadow: '0 4px 16px rgba(198, 124, 78, 0.25)',
+        }}
       >
         Complete Setup
       </button>
