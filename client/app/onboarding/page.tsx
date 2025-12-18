@@ -6,7 +6,6 @@ import OnboardingNav from '@/components/onboarding/OnboardingNav';
 import ProgressIndicator from '@/components/onboarding/ProgressIndicator';
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
 import Step1BusinessInfo from '@/components/onboarding/Step1BusinessInfo';
-import Step2BrandDetails from '@/components/onboarding/Step2BrandDetails';
 import Step3DesignPreferences from '@/components/onboarding/Step3DesignPreferences';
 import Step4Review from '@/components/onboarding/Step4Review';
 import { onboardingApi } from '@/api/onboarding.api';
@@ -14,7 +13,7 @@ import { onboardingApi } from '@/api/onboarding.api';
 export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   const [formData, setFormData] = useState({
     // Step 1
@@ -26,39 +25,30 @@ export default function OnboardingPage() {
     city: '',
     zip: '',
     industry: '',
-    // Step 2
-    brandName: '',
-    // Step 3
+    // Step 2 (formerly Step 3)
     logoPosition: 'Top Left',
-    typography: '',
-    colorPalette: ['#6366f1', '#8b5cf6', '#ec4899'],
+    fontType: 'dropdown' as 'dropdown' | 'google' | 'upload',
+    fontValue: '',
+    fontFile: null as File | null,
+    colors: {
+      primary: '#6366f1',
+      secondary: '#8b5cf6',
+      background: '#ffffff',
+      text: '#111827',
+    },
   });
 
   const [errors, setErrors] = useState<Record<string, Record<string, string>>>({
     step1: {},
     step2: {},
-    step3: {},
   });
 
   const validateStep1 = (): boolean => {
     const stepErrors: Record<string, string> = {};
     
-    if (!formData.businessName.trim()) {
-      stepErrors.businessName = 'Business name is required';
-    } else if (formData.businessName.trim().length < 2) {
+    // Only validate format if value is provided (all fields are optional)
+    if (formData.businessName.trim() && formData.businessName.trim().length < 2) {
       stepErrors.businessName = 'Business name must be at least 2 characters';
-    }
-    if (!formData.addressLine1.trim()) {
-      stepErrors.addressLine1 = 'Address line 1 is required';
-    }
-    if (!formData.city.trim()) {
-      stepErrors.city = 'City is required';
-    }
-    if (!formData.zip.trim()) {
-      stepErrors.zip = 'Zip code is required';
-    }
-    if (!formData.industry.trim()) {
-      stepErrors.industry = 'Industry is required';
     }
 
     setErrors({ ...errors, step1: stepErrors });
@@ -68,26 +58,14 @@ export default function OnboardingPage() {
   const validateStep2 = (): boolean => {
     const stepErrors: Record<string, string> = {};
     
-    if (!formData.brandName.trim()) {
-      stepErrors.brandName = 'Brand name is required';
-    } else if (formData.brandName.trim().length < 2) {
-      stepErrors.brandName = 'Brand name must be at least 2 characters';
+    // Only validate format if value is provided (all fields are optional)
+    if (formData.fontType === 'google' && formData.fontValue.trim() && 
+        !formData.fontValue.includes('fonts.googleapis.com') && 
+        !formData.fontValue.includes('@import')) {
+      stepErrors.fontValue = 'Please provide a valid Google Fonts embedded code';
     }
 
     setErrors({ ...errors, step2: stepErrors });
-    return Object.keys(stepErrors).length === 0;
-  };
-
-  const validateStep3 = (): boolean => {
-    const stepErrors: Record<string, string> = {};
-    
-    if (!formData.typography.trim()) {
-      stepErrors.typography = 'Typography is required';
-    } else if (!formData.typography.includes('fonts.googleapis.com') && !formData.typography.includes('@import')) {
-      stepErrors.typography = 'Please provide a valid Google Fonts embedded code';
-    }
-
-    setErrors({ ...errors, step3: stepErrors });
     return Object.keys(stepErrors).length === 0;
   };
 
@@ -98,8 +76,6 @@ export default function OnboardingPage() {
       isValid = validateStep1();
     } else if (currentStep === 2) {
       isValid = validateStep2();
-    } else if (currentStep === 3) {
-      isValid = validateStep3();
     }
 
     if (isValid && currentStep < totalSteps) {
@@ -116,12 +92,12 @@ export default function OnboardingPage() {
   const handleComplete = async () => {
     try {
       await onboardingApi({
-        brandName: formData.businessName || formData.brandName,
+        brandName: formData.businessName,
         industry: formData.industry,
         logo: formData.logo || undefined,
         logoPosition: formData.logoPosition,
-        typography: formData.typography,
-        colorPalette: formData.colorPalette,
+        typography: formData.fontType === 'google' ? formData.fontValue : formData.fontType === 'dropdown' ? formData.fontValue : '',
+        colorPalette: [formData.colors.primary, formData.colors.secondary, formData.colors.background, formData.colors.text],
       });
       // After successful submission, redirect to dashboard or next step
       router.push('/dashboard');
@@ -135,10 +111,8 @@ export default function OnboardingPage() {
       case 1:
         return 'Business Information';
       case 2:
-        return 'Brand details';
-      case 3:
         return 'Design preferences';
-      case 4:
+      case 3:
         return 'Review & complete';
       default:
         return 'Onboarding';
@@ -150,10 +124,8 @@ export default function OnboardingPage() {
       case 1:
         return 'Creative Flow collects this information to better understand and serve your business.';
       case 2:
-        return 'Tell us about your brand to personalize your experience.';
-      case 3:
         return 'Customize your design preferences to match your brand identity.';
-      case 4:
+      case 3:
         return 'Review all information before completing your setup.';
       default:
         return '';
@@ -251,12 +223,13 @@ export default function OnboardingPage() {
               )}
               
               {currentStep === 2 && (
-                <Step2BrandDetails
+                <Step3DesignPreferences
                   data={{
-                    brandName: formData.brandName,
-                    industry: '',
-                    logo: null,
-                    logoPreview: null,
+                    logoPosition: formData.logoPosition,
+                    fontType: formData.fontType,
+                    fontValue: formData.fontValue,
+                    fontFile: formData.fontFile,
+                    colors: formData.colors,
                   }}
                   onChange={(data) => setFormData({ ...formData, ...data })}
                   errors={errors.step2}
@@ -264,19 +237,20 @@ export default function OnboardingPage() {
               )}
               
               {currentStep === 3 && (
-                <Step3DesignPreferences
-                  data={{
-                    logoPosition: formData.logoPosition,
-                    typography: formData.typography,
-                    colorPalette: formData.colorPalette,
-                  }}
-                  onChange={(data) => setFormData({ ...formData, ...data })}
-                  errors={errors.step3}
-                />
-              )}
-              
-              {currentStep === 4 && (
-                <Step4Review data={formData} />
+                <Step4Review data={{
+                  businessName: formData.businessName,
+                  logoPreview: formData.logoPreview,
+                  addressLine1: formData.addressLine1,
+                  addressLine2: formData.addressLine2,
+                  city: formData.city,
+                  zip: formData.zip,
+                  industry: formData.industry,
+                  logoPosition: formData.logoPosition,
+                  fontType: formData.fontType,
+                  fontValue: formData.fontValue,
+                  fontFile: formData.fontFile,
+                  colors: formData.colors,
+                }} />
               )}
             </div>
 

@@ -1,13 +1,20 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Layout, Type, Palette, ChevronDown, X } from 'lucide-react';
+import { Layout, Type, Palette, ChevronDown, X, Upload } from 'lucide-react';
 
 interface Step3DesignPreferencesProps {
   data: {
     logoPosition: string;
-    typography: string;
-    colorPalette: string[];
+    fontType: 'dropdown' | 'google' | 'upload';
+    fontValue: string;
+    fontFile: File | null;
+    colors: {
+      primary: string;
+      secondary: string;
+      background: string;
+      text: string;
+    };
   };
   onChange: (data: any) => void;
   errors: Record<string, string>;
@@ -22,14 +29,44 @@ const LOGO_POSITIONS = [
   'Bottom Right',
 ] as const;
 
+const EASY_FONTS = [
+  { value: 'Inter', label: 'Inter', category: 'Sans-serif' },
+  { value: 'Roboto', label: 'Roboto', category: 'Sans-serif' },
+  { value: 'Open Sans', label: 'Open Sans', category: 'Sans-serif' },
+  { value: 'Lato', label: 'Lato', category: 'Sans-serif' },
+  { value: 'Montserrat', label: 'Montserrat', category: 'Sans-serif' },
+  { value: 'Poppins', label: 'Poppins', category: 'Sans-serif' },
+  { value: 'Playfair Display', label: 'Playfair Display', category: 'Serif' },
+  { value: 'Merriweather', label: 'Merriweather', category: 'Serif' },
+  { value: 'Lora', label: 'Lora', category: 'Serif' },
+  { value: 'Roboto Mono', label: 'Roboto Mono', category: 'Monospace' },
+  { value: 'Courier New', label: 'Courier New', category: 'Monospace' },
+  { value: 'Georgia', label: 'Georgia', category: 'Serif' },
+  { value: 'Times New Roman', label: 'Times New Roman', category: 'Serif' },
+  { value: 'Arial', label: 'Arial', category: 'Sans-serif' },
+  { value: 'Helvetica', label: 'Helvetica', category: 'Sans-serif' },
+];
+
+const COLOR_ROLES = [
+  { key: 'primary', label: 'Primary', description: 'Main brand color' },
+  { key: 'secondary', label: 'Secondary', description: 'Accent color' },
+  { key: 'background', label: 'Background', description: 'Page background' },
+  { key: 'text', label: 'Text', description: 'Main text color' },
+] as const;
+
 export default function Step3DesignPreferences({ data, onChange, errors }: Step3DesignPreferencesProps) {
   const [isLogoPositionOpen, setIsLogoPositionOpen] = useState(false);
+  const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
   const logoPositionRef = useRef<HTMLDivElement>(null);
+  const fontDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (logoPositionRef.current && !logoPositionRef.current.contains(event.target as Node)) {
         setIsLogoPositionOpen(false);
+      }
+      if (fontDropdownRef.current && !fontDropdownRef.current.contains(event.target as Node)) {
+        setIsFontDropdownOpen(false);
       }
     };
 
@@ -39,23 +76,36 @@ export default function Step3DesignPreferences({ data, onChange, errors }: Step3
     };
   }, []);
 
-  const handleColorChange = (index: number, color: string) => {
-    const newPalette = [...data.colorPalette];
-    newPalette[index] = color;
-    onChange({ ...data, colorPalette: newPalette });
+  const handleColorChange = (role: keyof typeof data.colors, color: string) => {
+    onChange({ ...data, colors: { ...data.colors, [role]: color } });
   };
 
-  const handleAddColor = () => {
-    if (data.colorPalette.length < 6) {
-      onChange({ ...data, colorPalette: [...data.colorPalette, '#000000'] });
+  const handleFontTypeChange = (type: 'dropdown' | 'google' | 'upload') => {
+    onChange({ ...data, fontType: type, fontValue: '', fontFile: null });
+  };
+
+  const handleFontFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['font/woff', 'font/woff2', 'application/font-woff', 'application/font-woff2', 'application/x-font-ttf', 'font/ttf', 'font/otf'];
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      const validExtensions = ['woff', 'woff2', 'ttf', 'otf'];
+      
+      if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension || '')) {
+        return;
+      }
+      
+      onChange({ ...data, fontFile: file });
     }
   };
 
-  const handleRemoveColor = (index: number) => {
-    if (data.colorPalette.length > 1) {
-      const newPalette = data.colorPalette.filter((_, i) => i !== index);
-      onChange({ ...data, colorPalette: newPalette });
+  const getSelectedFontLabel = () => {
+    if (data.fontType === 'dropdown') {
+      const font = EASY_FONTS.find(f => f.value === data.fontValue);
+      return font ? font.label : 'Select a font';
     }
+    return 'Select a font';
   };
 
   return (
@@ -194,10 +244,9 @@ export default function Step3DesignPreferences({ data, onChange, errors }: Step3
         </div>
       </div>
 
-      {/* Typography */}
+      {/* Typography Selection */}
       <div>
         <label 
-          htmlFor="typography" 
           className="block mb-2"
           style={{
             fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
@@ -206,61 +255,301 @@ export default function Step3DesignPreferences({ data, onChange, errors }: Step3
             color: 'rgba(49, 49, 49, 0.8)',
           }}
         >
-          Typography (Google Fonts Embedded Code)
+          Typography
         </label>
-        <div className="relative">
-          <Type 
-            className="absolute left-3 top-3 pointer-events-none z-10"
+
+        {/* Font Type Selection Tabs */}
+        <div className="flex gap-2 mb-3">
+          <button
+            type="button"
+            onClick={() => handleFontTypeChange('dropdown')}
+            className="rounded-lg transition-all duration-200"
             style={{
-              width: '16px',
-              height: '16px',
-              color: errors.typography 
-                ? 'rgba(239, 68, 68, 0.8)' 
-                : 'rgba(49, 49, 49, 0.5)',
-            }}
-          />
-          <textarea
-            id="typography"
-            value={data.typography}
-            onChange={(e) => onChange({ ...data, typography: e.target.value })}
-            rows={3}
-            className="w-full rounded-lg border-2 outline-none transition-all duration-300 resize-none"
-            style={{
-              padding: '12px 12px 12px 40px',
-              fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+              padding: '8px 16px',
+              fontSize: 'clamp(11px, 0.95vw + 0.5rem, 12px)',
               fontFamily: 'var(--font-inter), sans-serif',
               fontWeight: 400,
-              backgroundColor: errors.typography 
-                ? 'rgba(239, 68, 68, 0.05)' 
+              backgroundColor: data.fontType === 'dropdown' 
+                ? 'var(--color-frame)' 
                 : 'rgba(237, 237, 237, 0.8)',
-              borderColor: errors.typography 
-                ? 'rgba(239, 68, 68, 0.4)' 
-                : 'rgba(198, 124, 78, 0.2)',
-              color: 'rgba(49, 49, 49, 0.75)',
+              color: data.fontType === 'dropdown' 
+                ? 'rgba(237, 237, 237, 0.95)' 
+                : 'rgba(49, 49, 49, 0.7)',
+              border: `2px solid ${data.fontType === 'dropdown' ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)'}`,
             }}
-            placeholder='e.g., &lt;link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"&gt;'
-          />
+          >
+            Easy Fonts
+          </button>
+          <button
+            type="button"
+            onClick={() => handleFontTypeChange('google')}
+            className="rounded-lg transition-all duration-200"
+            style={{
+              padding: '8px 16px',
+              fontSize: 'clamp(11px, 0.95vw + 0.5rem, 12px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              backgroundColor: data.fontType === 'google' 
+                ? 'var(--color-frame)' 
+                : 'rgba(237, 237, 237, 0.8)',
+              color: data.fontType === 'google' 
+                ? 'rgba(237, 237, 237, 0.95)' 
+                : 'rgba(49, 49, 49, 0.7)',
+              border: `2px solid ${data.fontType === 'google' ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)'}`,
+            }}
+          >
+            Google Fonts
+          </button>
+          <button
+            type="button"
+            onClick={() => handleFontTypeChange('upload')}
+            className="rounded-lg transition-all duration-200"
+            style={{
+              padding: '8px 16px',
+              fontSize: 'clamp(11px, 0.95vw + 0.5rem, 12px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              backgroundColor: data.fontType === 'upload' 
+                ? 'var(--color-frame)' 
+                : 'rgba(237, 237, 237, 0.8)',
+              color: data.fontType === 'upload' 
+                ? 'rgba(237, 237, 237, 0.95)' 
+                : 'rgba(49, 49, 49, 0.7)',
+              border: `2px solid ${data.fontType === 'upload' ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)'}`,
+            }}
+          >
+            Upload Font
+          </button>
         </div>
-        {errors.typography && (
+
+        {/* Font Dropdown Option */}
+        {data.fontType === 'dropdown' && (
+          <div className="relative" ref={fontDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsFontDropdownOpen(!isFontDropdownOpen)}
+              className="w-full rounded-lg border-2 outline-none transition-all duration-200 text-left flex items-center justify-between relative"
+              style={{
+                padding: '12px 16px',
+                paddingLeft: '40px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: isFontDropdownOpen 
+                  ? 'rgba(237, 237, 237, 0.95)' 
+                  : 'rgba(237, 237, 237, 0.8)',
+                borderColor: errors.fontValue 
+                  ? 'rgba(239, 68, 68, 0.4)' 
+                  : isFontDropdownOpen 
+                    ? 'var(--color-frame)' 
+                    : 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+                cursor: 'pointer',
+                boxShadow: isFontDropdownOpen 
+                  ? '0 4px 20px rgba(198, 124, 78, 0.15)' 
+                  : 'none',
+              }}
+            >
+              <Type 
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  color: errors.fontValue 
+                    ? 'rgba(239, 68, 68, 0.8)' 
+                    : 'rgba(49, 49, 49, 0.5)',
+                }}
+              />
+              <span>{getSelectedFontLabel()}</span>
+              <ChevronDown 
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  color: 'rgba(49, 49, 49, 0.5)',
+                  transform: isFontDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                }}
+              />
+            </button>
+            
+            {isFontDropdownOpen && (
+              <div 
+                className="absolute z-50 w-full mt-2 rounded-lg overflow-hidden max-h-64 overflow-y-auto"
+                style={{
+                  backgroundColor: 'rgba(237, 237, 237, 0.98)',
+                  border: '2px solid rgba(198, 124, 78, 0.2)',
+                  boxShadow: '0 8px 32px rgba(49, 49, 49, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
+                <div style={{ padding: '4px 0' }}>
+                  {EASY_FONTS.map((font) => (
+                    <button
+                      key={font.value}
+                      type="button"
+                      onClick={() => {
+                        onChange({ ...data, fontValue: font.value });
+                        setIsFontDropdownOpen(false);
+                      }}
+                      className="w-full text-left transition-all duration-150"
+                      style={{
+                        padding: '10px 16px',
+                        fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                        fontFamily: `"${font.value}", sans-serif`,
+                        fontWeight: 400,
+                        backgroundColor: data.fontValue === font.value
+                          ? 'rgba(198, 124, 78, 0.1)'
+                          : 'transparent',
+                        color: data.fontValue === font.value
+                          ? 'rgba(198, 124, 78, 0.9)'
+                          : 'rgba(49, 49, 49, 0.75)',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (data.fontValue !== font.value) {
+                          e.currentTarget.style.backgroundColor = 'rgba(198, 124, 78, 0.05)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (data.fontValue !== font.value) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>{font.label}</span>
+                        <span style={{ 
+                          fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)', 
+                          color: 'rgba(49, 49, 49, 0.5)',
+                          fontFamily: 'var(--font-inter), sans-serif',
+                        }}>{font.category}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Google Fonts Input */}
+        {data.fontType === 'google' && (
+          <div className="relative">
+            <Type 
+              className="absolute left-3 top-3 pointer-events-none z-10"
+              style={{
+                width: '16px',
+                height: '16px',
+                color: errors.fontValue 
+                  ? 'rgba(239, 68, 68, 0.8)' 
+                  : 'rgba(49, 49, 49, 0.5)',
+              }}
+            />
+            <textarea
+              value={data.fontValue}
+              onChange={(e) => onChange({ ...data, fontValue: e.target.value })}
+              rows={3}
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300 resize-none"
+              style={{
+                padding: '12px 12px 12px 40px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: errors.fontValue 
+                  ? 'rgba(239, 68, 68, 0.05)' 
+                  : 'rgba(237, 237, 237, 0.8)',
+                borderColor: errors.fontValue 
+                  ? 'rgba(239, 68, 68, 0.4)' 
+                  : 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+              }}
+              placeholder='e.g., &lt;link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"&gt;'
+            />
+          </div>
+        )}
+
+        {/* Upload Font Option */}
+        {data.fontType === 'upload' && (
+          <div className="relative">
+            <input
+              type="file"
+              id="fontFile"
+              accept=".woff,.woff2,.ttf,.otf"
+              onChange={handleFontFileChange}
+              className="hidden"
+            />
+            <label
+              htmlFor="fontFile"
+              className="flex flex-col items-center justify-center w-full cursor-pointer transition-all duration-200 rounded-lg border-2 border-dashed"
+              style={{
+                padding: '24px',
+                backgroundColor: errors.fontFile 
+                  ? 'rgba(239, 68, 68, 0.05)' 
+                  : 'rgba(237, 237, 237, 0.6)',
+                borderColor: errors.fontFile 
+                  ? 'rgba(239, 68, 68, 0.4)' 
+                  : 'rgba(198, 124, 78, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                if (!errors.fontFile) {
+                  e.currentTarget.style.backgroundColor = 'rgba(237, 237, 237, 0.8)';
+                  e.currentTarget.style.borderColor = 'var(--color-frame)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!errors.fontFile) {
+                  e.currentTarget.style.backgroundColor = 'rgba(237, 237, 237, 0.6)';
+                  e.currentTarget.style.borderColor = 'rgba(198, 124, 78, 0.3)';
+                }
+              }}
+            >
+              <Upload style={{
+                width: '24px',
+                height: '24px',
+                marginBottom: '8px',
+                color: 'rgba(49, 49, 49, 0.5)',
+              }} />
+              <p style={{
+                marginBottom: '4px',
+                fontSize: 'clamp(11px, 0.95vw + 0.5rem, 12px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                color: 'rgba(49, 49, 49, 0.6)',
+              }}>
+                <span style={{ fontWeight: 400 }}>Click to upload</span> or drag and drop
+              </p>
+              <p style={{
+                fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                color: 'rgba(49, 49, 49, 0.5)',
+              }}>WOFF, WOFF2, TTF, OTF (MAX. 10MB)</p>
+              {data.fontFile && (
+                <p style={{
+                  marginTop: '8px',
+                  fontSize: 'clamp(11px, 0.95vw + 0.5rem, 12px)',
+                  fontFamily: 'var(--font-inter), sans-serif',
+                  color: 'rgba(198, 124, 78, 0.9)',
+                  fontWeight: 500,
+                }}>
+                  {data.fontFile.name}
+                </p>
+              )}
+            </label>
+          </div>
+        )}
+
+        {/* Error Messages */}
+        {(errors.fontValue || errors.fontFile) && (
           <p style={{
             marginTop: '4px',
             fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
             color: 'rgba(239, 68, 68, 0.85)',
             fontFamily: 'var(--font-inter), sans-serif',
             fontWeight: 400,
-          }}>{errors.typography}</p>
+          }}>{errors.fontValue || errors.fontFile}</p>
         )}
-        <p style={{
-          marginTop: '4px',
-          fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
-          fontFamily: 'var(--font-inter), sans-serif',
-          color: 'rgba(49, 49, 49, 0.5)',
-        }}>
-          Paste the Google Fonts link 
-        </p>
       </div>
 
-      {/* Color Palette */}
+      {/* Color Selection */}
       <div>
         <label 
           className="block mb-2"
@@ -273,80 +562,72 @@ export default function Step3DesignPreferences({ data, onChange, errors }: Step3
         >
           Color Palette
         </label>
-        <div className="flex flex-wrap gap-3 items-center">
-          {data.colorPalette.map((color, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className="relative">
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(e) => handleColorChange(index, e.target.value)}
-                  className="rounded-lg cursor-pointer"
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          {COLOR_ROLES.map((role) => (
+            <div key={role.key} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div
+                  className="relative rounded-lg cursor-pointer"
                   style={{
                     width: '48px',
                     height: '48px',
                     border: '2px solid rgba(198, 124, 78, 0.2)',
+                    backgroundColor: data.colors[role.key as keyof typeof data.colors],
+                    flexShrink: 0,
                   }}
-                />
-                {data.colorPalette.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveColor(index)}
-                    className="absolute rounded-full transition-colors"
+                >
+                  <input
+                    type="color"
+                    value={data.colors[role.key as keyof typeof data.colors]}
+                    onChange={(e) => handleColorChange(role.key as keyof typeof data.colors, e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    style={{ cursor: 'pointer' }}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{
+                      fontSize: 'clamp(12px, 1vw + 0.5rem, 13px)',
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontWeight: 500,
+                      color: 'rgba(49, 49, 49, 0.9)',
+                    }}>
+                      {role.label}
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    value={data.colors[role.key as keyof typeof data.colors]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === '') {
+                        handleColorChange(role.key as keyof typeof data.colors, value);
+                      }
+                    }}
+                    placeholder="#000000"
+                    className="w-full rounded-lg border-2 outline-none transition-all duration-300"
                     style={{
-                      top: '-6px',
-                      right: '-6px',
-                      padding: '4px',
-                      backgroundColor: 'rgba(239, 68, 68, 0.9)',
-                      color: 'white',
+                      padding: '6px 10px',
+                      fontSize: 'clamp(11px, 0.9vw + 0.5rem, 12px)',
+                      fontFamily: 'var(--font-mono), monospace',
+                      fontWeight: 400,
+                      backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                      borderColor: 'rgba(198, 124, 78, 0.2)',
+                      color: 'rgba(49, 49, 49, 0.75)',
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
-                    }}
-                    aria-label="Remove color"
-                  >
-                    <X style={{ width: '12px', height: '12px' }} />
-                  </button>
-                )}
+                  />
+                  <p style={{
+                    fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+                    fontFamily: 'var(--font-inter), sans-serif',
+                    color: 'rgba(49, 49, 49, 0.5)',
+                  }}>
+                    {role.description}
+                  </p>
+                </div>
               </div>
             </div>
           ))}
-          {data.colorPalette.length < 6 && (
-            <button
-              type="button"
-              onClick={handleAddColor}
-              className="rounded-lg border-2 border-dashed flex items-center justify-center transition-colors"
-              style={{
-                width: '48px',
-                height: '48px',
-                borderColor: 'rgba(198, 124, 78, 0.3)',
-                color: 'rgba(49, 49, 49, 0.5)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-frame)';
-                e.currentTarget.style.color = 'var(--color-frame)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(198, 124, 78, 0.3)';
-                e.currentTarget.style.color = 'rgba(49, 49, 49, 0.5)';
-              }}
-              aria-label="Add color"
-            >
-              <Palette style={{ width: '20px', height: '20px' }} />
-            </button>
-          )}
         </div>
-        <p style={{
-          marginTop: '8px',
-          fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
-          fontFamily: 'var(--font-inter), sans-serif',
-          color: 'rgba(49, 49, 49, 0.5)',
-        }}>
-          Click on a color to change it. Add up to 6 colors for your brand palette.
-        </p>
       </div>
     </div>
   );
