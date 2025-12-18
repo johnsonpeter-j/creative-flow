@@ -116,7 +116,7 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--color-background)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'transparent' }}>
       <div className={`auth-container ${isActive ? 'active' : ''}`}>
         {/* Login Form */}
         <div className="form-box login">
