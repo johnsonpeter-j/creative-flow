@@ -93,6 +93,13 @@ code, pre {
   font-size: clamp(12px, 1vw + 0.5rem, 14px);
 }
 
+/* Onboarding Grid Responsive */
+@media (max-width: 768px) {
+  .onboarding-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* Responsive text utilities - slightly scaled down */
 .text-sm {
   font-size: clamp(11px, 1vw + 0.5rem, 13px) !important;

@@ -1,40 +1,38 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 
-export default function OnboardingHeader() {
+interface OnboardingHeaderProps {
+  title: string;
+  subtitle?: string;
+}
+
+export default function OnboardingHeader({ title, subtitle }: OnboardingHeaderProps) {
   return (
-    <div className="text-center mb-10 animate-fade-in">
-      <div 
-        className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6 transform transition-all duration-300 hover:scale-110 hover:rotate-3"
-        style={{ 
-          backgroundColor: 'var(--color-frame)',
-          boxShadow: '0 8px 24px rgba(198, 124, 78, 0.3)',
-        }}
-      >
-        <Sparkles className="w-8 h-8" style={{ color: 'var(--color-background)' }} />
-      </div>
+    <div className="mb-8">
       <h1 
-        className="font-bold mb-2 tracking-tight"
+        className="mb-3"
         style={{ 
-          color: 'var(--color-frame)',
-          letterSpacing: '-0.02em',
+          color: 'rgba(49, 49, 49, 0.95)',
+          letterSpacing: '-0.01em',
           fontSize: 'clamp(24px, 3vw + 0.5rem, 28px)',
           fontFamily: 'var(--font-roboto), sans-serif',
+          fontWeight: 400,
         }}
       >
-        Welcome to Creative Flow
+        {title}
       </h1>
-      <p 
-        className="mt-3 font-medium" 
-        style={{ 
-          color: 'var(--color-text)', 
-          opacity: 0.65,
-          fontSize: 'clamp(11px, 1vw + 0.5rem, 13px)',
-          fontFamily: 'var(--font-inter), sans-serif',
-        }}
-      >
-        Let's set up your brand to create amazing advertising creatives.
-      </p>
+      {subtitle && (
+        <p 
+          style={{ 
+            color: 'rgba(49, 49, 49, 0.6)', 
+            fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontWeight: 400,
+            lineHeight: 1.5,
+          }}
+        >
+          {subtitle}
+        </p>
+      )}
     </div>
   );
 }

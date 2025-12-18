@@ -183,21 +183,215 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} >
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Business Details - Two Column Layout */}
+      <div className="onboarding-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        {/* Business Address Dropdown */}
+        <div>
+          <label 
+            htmlFor="businessAddress" 
+            className="block mb-2"
+            style={{
+              fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              color: 'rgba(49, 49, 49, 0.8)',
+            }}
+          >
+            Business address
+          </label>
+          <div className="relative">
+            <select
+              id="businessAddress"
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300"
+              style={{
+                padding: '12px 16px',
+                paddingRight: '40px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                borderColor: 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+                appearance: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="">Registered business address</option>
+              <option value="registered">Registered business address</option>
+              <option value="operating">Operating business address</option>
+            </select>
+            <ChevronDown 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+              style={{
+                width: '16px',
+                height: '16px',
+                color: 'rgba(49, 49, 49, 0.5)',
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Type of Business Dropdown */}
+        <div>
+          <label 
+            htmlFor="businessType" 
+            className="block mb-2"
+            style={{
+              fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              color: 'rgba(49, 49, 49, 0.8)',
+            }}
+          >
+            Type
+          </label>
+          <div className="relative">
+            <select
+              id="businessType"
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300"
+              style={{
+                padding: '12px 16px',
+                paddingRight: '40px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                borderColor: 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+                appearance: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="">Type of business</option>
+              <option value="sole">Sole Proprietorship</option>
+              <option value="partnership">Partnership</option>
+              <option value="llc">LLC</option>
+              <option value="corporation">Corporation</option>
+            </select>
+            <ChevronDown 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+              style={{
+                width: '16px',
+                height: '16px',
+                color: 'rgba(49, 49, 49, 0.5)',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Address Section */}
+      <div>
+        <label 
+          className="block mb-2"
+          style={{
+            fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontWeight: 400,
+            color: 'rgba(49, 49, 49, 0.8)',
+          }}
+        >
+          Address
+        </label>
+        <div className="onboarding-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          {/* Address Line 1 - Left */}
+          <div>
+            <input
+              type="text"
+              placeholder="Address line 1"
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300"
+              style={{
+                padding: '12px 16px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                borderColor: 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+              }}
+            />
+          </div>
+          {/* Address Line 1 - Right */}
+          <div>
+            <input
+              type="text"
+              placeholder="Address line 1"
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300"
+              style={{
+                padding: '12px 16px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                borderColor: 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+              }}
+            />
+          </div>
+          {/* City */}
+          <div>
+            <input
+              type="text"
+              placeholder="City"
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300"
+              style={{
+                padding: '12px 16px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                borderColor: 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+              }}
+            />
+          </div>
+          {/* Zip */}
+          <div>
+            <input
+              type="text"
+              placeholder="Zip"
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300"
+              style={{
+                padding: '12px 16px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                borderColor: 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Brand Name */}
       <div>
-        <label htmlFor="brandName" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label 
+          htmlFor="brandName" 
+          className="block mb-2"
+          style={{
+            fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontWeight: 400,
+            color: 'rgba(49, 49, 49, 0.8)',
+          }}
+        >
           Brand Name
         </label>
         <div className="relative group">
           <Building2 
-            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors ${
-              errors.brandName 
-                ? 'text-red-500' 
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors"
+            style={{
+              width: '16px',
+              height: '16px',
+              color: errors.brandName 
+                ? 'rgba(239, 68, 68, 0.8)' 
                 : isFocused.brandName 
-                  ? '' 
-                  : 'text-gray-400 group-hover:text-gray-600'
-            }`} 
+                  ? 'rgba(198, 124, 78, 0.8)' 
+                  : 'rgba(49, 49, 49, 0.5)',
+            }}
           />
           <input
             id="brandName"
@@ -211,45 +405,66 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             }}
             onFocus={() => setIsFocused({ ...isFocused, brandName: true })}
             onBlur={() => setIsFocused({ ...isFocused, brandName: false })}
-            className={`input-elegant w-full pl-11 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-300 ${
-              errors.brandName
-                ? 'border-red-300 focus:border-red-500'
-                : 'border-transparent'
-            }`}
-            style={errors.brandName ? {
-              backgroundColor: 'rgba(239, 68, 68, 0.05)',
-              borderColor: '#fca5a5',
-              color: 'var(--color-text)',
-            } : {
-              backgroundColor: 'rgba(237, 237, 237, 0.6)',
-              borderColor: isFocused.brandName ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)',
-              color: 'var(--color-text)',
-              boxShadow: isFocused.brandName ? '0 4px 20px rgba(198, 124, 78, 0.12)' : '0 2px 8px rgba(49, 49, 49, 0.05)',
+            className="w-full pl-11 pr-4 rounded-lg border-2 outline-none transition-all duration-300"
+            style={{
+              padding: '12px',
+              fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              backgroundColor: errors.brandName 
+                ? 'rgba(239, 68, 68, 0.05)' 
+                : 'rgba(237, 237, 237, 0.8)',
+              borderColor: errors.brandName 
+                ? 'rgba(239, 68, 68, 0.4)' 
+                : isFocused.brandName 
+                  ? 'var(--color-frame)' 
+                  : 'transparent',
+              color: 'rgba(49, 49, 49, 0.75)',
+              boxShadow: isFocused.brandName && !errors.brandName 
+                ? '0 4px 20px rgba(198, 124, 78, 0.15)' 
+                : 'none',
             }}
             placeholder="Enter your brand name"
           />
         </div>
-        <div className="min-h-[20px] mt-1">
+        <div style={{ minHeight: '20px', marginTop: '4px' }}>
           {errors.brandName && (
-            <p className="text-sm text-red-600">{errors.brandName}</p>
+            <p style={{
+              fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+              color: 'rgba(239, 68, 68, 0.85)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+            }}>{errors.brandName}</p>
           )}
         </div>
       </div>
 
       {/* Industry */}
       <div>
-        <label htmlFor="industry" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label 
+          htmlFor="industry" 
+          className="block mb-2"
+          style={{
+            fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontWeight: 400,
+            color: 'rgba(49, 49, 49, 0.8)',
+          }}
+        >
           Industry
         </label>
         <div className="relative group">
           <Briefcase 
-            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors ${
-              errors.industry 
-                ? 'text-red-500' 
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors"
+            style={{
+              width: '16px',
+              height: '16px',
+              color: errors.industry 
+                ? 'rgba(239, 68, 68, 0.8)' 
                 : isFocused.industry 
-                  ? '' 
-                  : 'text-gray-400 group-hover:text-gray-600'
-            }`} 
+                  ? 'rgba(198, 124, 78, 0.8)' 
+                  : 'rgba(49, 49, 49, 0.5)',
+            }}
           />
           <input
             id="industry"
@@ -263,34 +478,51 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             }}
             onFocus={() => setIsFocused({ ...isFocused, industry: true })}
             onBlur={() => setIsFocused({ ...isFocused, industry: false })}
-            className={`input-elegant w-full pl-11 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-300 ${
-              errors.industry
-                ? 'border-red-300 focus:border-red-500'
-                : 'border-transparent'
-            }`}
-            style={errors.industry ? {
-              backgroundColor: 'rgba(239, 68, 68, 0.05)',
-              borderColor: '#fca5a5',
-              color: 'var(--color-text)',
-            } : {
-              backgroundColor: 'rgba(237, 237, 237, 0.6)',
-              borderColor: isFocused.industry ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)',
-              color: 'var(--color-text)',
-              boxShadow: isFocused.industry ? '0 4px 20px rgba(198, 124, 78, 0.12)' : '0 2px 8px rgba(49, 49, 49, 0.05)',
+            className="w-full pl-11 pr-4 rounded-lg border-2 outline-none transition-all duration-300"
+            style={{
+              padding: '12px',
+              fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              backgroundColor: errors.industry 
+                ? 'rgba(239, 68, 68, 0.05)' 
+                : 'rgba(237, 237, 237, 0.8)',
+              borderColor: errors.industry 
+                ? 'rgba(239, 68, 68, 0.4)' 
+                : isFocused.industry 
+                  ? 'var(--color-frame)' 
+                  : 'transparent',
+              color: 'rgba(49, 49, 49, 0.75)',
+              boxShadow: isFocused.industry && !errors.industry 
+                ? '0 4px 20px rgba(198, 124, 78, 0.15)' 
+                : 'none',
             }}
             placeholder="e.g., Technology, Fashion, Food & Beverage"
           />
         </div>
-        <div className="min-h-[20px] mt-1">
+        <div style={{ minHeight: '20px', marginTop: '4px' }}>
           {errors.industry && (
-            <p className="text-sm text-red-600">{errors.industry}</p>
+            <p style={{
+              fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+              color: 'rgba(239, 68, 68, 0.85)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+            }}>{errors.industry}</p>
           )}
         </div>
       </div>
 
       {/* Logo Upload */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label 
+          className="block mb-2"
+          style={{
+            fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontWeight: 400,
+            color: 'rgba(49, 49, 49, 0.8)',
+          }}
+        >
           Logo
         </label>
         {!logoPreview ? (
@@ -304,20 +536,55 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             />
             <label
               htmlFor="logo"
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 bg-gray-50 hover:bg-gray-100 border-gray-300 hover:border-indigo-500 group"
+              className="flex flex-col items-center justify-center w-full cursor-pointer transition-all duration-200 rounded-lg border-2 border-dashed group"
+              style={{
+                height: '120px',
+                backgroundColor: 'rgba(237, 237, 237, 0.6)',
+                borderColor: 'rgba(198, 124, 78, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(237, 237, 237, 0.8)';
+                e.currentTarget.style.borderColor = 'var(--color-frame)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(237, 237, 237, 0.6)';
+                e.currentTarget.style.borderColor = 'rgba(198, 124, 78, 0.3)';
+              }}
             >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-10 h-10 mb-3 text-gray-400 group-hover:text-indigo-600 transition-colors" />
-                <p className="mb-2 text-sm text-gray-500">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
+              <div className="flex flex-col items-center justify-center">
+                <Upload style={{
+                  width: '24px',
+                  height: '24px',
+                  marginBottom: '8px',
+                  color: 'rgba(49, 49, 49, 0.5)',
+                }} />
+                <p style={{
+                  marginBottom: '4px',
+                  fontSize: 'clamp(11px, 0.95vw + 0.5rem, 12px)',
+                  fontFamily: 'var(--font-inter), sans-serif',
+                  fontWeight: 400,
+                  color: 'rgba(49, 49, 49, 0.6)',
+                }}>
+                  <span style={{ fontWeight: 400 }}>Click to upload</span> or drag and drop
                 </p>
-                <p className="text-xs text-gray-500">PNG, JPG, SVG (MAX. 5MB)</p>
+                <p style={{
+                  fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+                  fontFamily: 'var(--font-inter), sans-serif',
+                  color: 'rgba(49, 49, 49, 0.5)',
+                }}>PNG, JPG, SVG (MAX. 5MB)</p>
               </div>
             </label>
           </div>
         ) : (
           <div className="relative">
-            <div className="flex items-center justify-center w-full h-32 border-2 border-gray-200 rounded-xl bg-gray-50 p-4">
+            <div 
+              className="flex items-center justify-center w-full rounded-lg p-4"
+              style={{
+                height: '120px',
+                border: '2px solid rgba(198, 124, 78, 0.2)',
+                backgroundColor: 'rgba(237, 237, 237, 0.6)',
+              }}
+            >
               <img
                 src={logoPreview}
                 alt="Logo preview"
@@ -327,23 +594,48 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             <button
               type="button"
               onClick={handleRemoveLogo}
-              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+              className="absolute top-2 right-2 rounded-full transition-colors"
+              style={{
+                padding: '6px',
+                backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
+              }}
               aria-label="Remove logo"
             >
-              <X className="w-4 h-4" />
+              <X style={{ width: '14px', height: '14px' }} />
             </button>
           </div>
         )}
-        <div className="min-h-[20px] mt-1">
+        <div style={{ minHeight: '20px', marginTop: '4px' }}>
           {errors.logo && (
-            <p className="text-sm text-red-600">{errors.logo}</p>
+            <p style={{
+              fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+              color: 'rgba(239, 68, 68, 0.85)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+            }}>{errors.logo}</p>
           )}
         </div>
       </div>
 
       {/* Logo Position */}
       <div>
-        <label htmlFor="logoPosition" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label 
+          htmlFor="logoPosition" 
+          className="block mb-2"
+          style={{
+            fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontWeight: 400,
+            color: 'rgba(49, 49, 49, 0.8)',
+          }}
+        >
           Logo Position
         </label>
         <div className="relative" ref={logoPositionRef}>
@@ -351,49 +643,109 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             type="button"
             id="logoPosition"
             onClick={() => setIsLogoPositionOpen(!isLogoPositionOpen)}
-            className={`w-full pl-11 pr-10 py-3 border-2 rounded-xl outline-none transition-all duration-200 bg-gray-50 text-left text-gray-900 cursor-pointer hover:bg-white ${
-              isLogoPositionOpen ? 'bg-white' : ''
-            }`}
-            style={isLogoPositionOpen ? {
-              borderColor: 'var(--color-frame)',
-              boxShadow: '0 0 0 2px rgba(198, 124, 78, 0.2)',
-            } : {
-              borderColor: 'rgba(198, 124, 78, 0.2)',
+            className="w-full pl-11 pr-10 rounded-lg border-2 outline-none transition-all duration-200 text-left cursor-pointer relative"
+            style={{
+              padding: '12px',
+              fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              backgroundColor: isLogoPositionOpen 
+                ? 'rgba(237, 237, 237, 0.95)' 
+                : 'rgba(237, 237, 237, 0.8)',
+              borderColor: isLogoPositionOpen 
+                ? 'var(--color-frame)' 
+                : 'transparent',
+              color: 'rgba(49, 49, 49, 0.75)',
+              boxShadow: isLogoPositionOpen 
+                ? '0 4px 20px rgba(198, 124, 78, 0.15)' 
+                : 'none',
             }}
           >
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <Layout className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <Layout 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    color: 'rgba(49, 49, 49, 0.5)',
+                  }}
+                />
                 <span className="pl-6">{logoPosition}</span>
               </span>
               <ChevronDown 
-                className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-                  isLogoPositionOpen ? 'transform rotate-180' : ''
-                }`}
+                className="transition-transform duration-200"
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  color: 'rgba(49, 49, 49, 0.5)',
+                  transform: isLogoPositionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
               />
             </div>
           </button>
           
           {isLogoPositionOpen && (
-            <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl overflow-hidden">
-              <div className="py-1">
+            <div 
+              className="absolute z-50 w-full mt-2 rounded-lg overflow-hidden"
+              style={{
+                backgroundColor: 'rgba(237, 237, 237, 0.98)',
+                border: '2px solid rgba(198, 124, 78, 0.2)',
+                boxShadow: '0 8px 32px rgba(49, 49, 49, 0.15)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <div style={{ padding: '4px 0' }}>
                 {LOGO_POSITIONS.map((position) => (
                   <button
                     key={position}
                     type="button"
                     onClick={() => handleLogoPositionSelect(position)}
-                    className={`w-full px-4 py-3 text-left transition-all duration-150 flex items-center gap-2 ${
-                      logoPosition === position
-                        ? 'bg-indigo-50 text-indigo-700 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
-                    }`}
+                    className="w-full text-left transition-all duration-150 flex items-center gap-2"
+                    style={{
+                      padding: '10px 16px',
+                      fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontWeight: 400,
+                      backgroundColor: logoPosition === position
+                        ? 'rgba(198, 124, 78, 0.1)'
+                        : 'transparent',
+                      color: logoPosition === position
+                        ? 'rgba(198, 124, 78, 0.9)'
+                        : 'rgba(49, 49, 49, 0.75)',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (logoPosition !== position) {
+                        e.currentTarget.style.backgroundColor = 'rgba(198, 124, 78, 0.05)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (logoPosition !== position) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
                   >
-                    <div className={`w-2 h-2 rounded-full ${
-                      logoPosition === position ? 'bg-indigo-600' : 'bg-transparent'
-                    }`} />
+                    <div style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: logoPosition === position 
+                        ? 'var(--color-frame)' 
+                        : 'transparent',
+                    }} />
                     <span>{position}</span>
                     {logoPosition === position && (
-                      <svg className="ml-auto w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg 
+                        className="ml-auto" 
+                        style={{
+                          width: '16px',
+                          height: '16px',
+                          color: 'var(--color-frame)',
+                        }}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
@@ -411,18 +763,30 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
 
       {/* Typography */}
       <div>
-        <label htmlFor="typography" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label 
+          htmlFor="typography" 
+          className="block mb-2"
+          style={{
+            fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontWeight: 400,
+            color: 'rgba(49, 49, 49, 0.8)',
+          }}
+        >
           Typography (Google Fonts Embedded Code)
         </label>
         <div className="relative group">
           <Type 
-            className={`absolute left-3 top-3 w-5 h-5 transition-colors ${
-              errors.typography 
-                ? 'text-red-500' 
+            className="absolute left-3 top-3 transition-colors"
+            style={{
+              width: '16px',
+              height: '16px',
+              color: errors.typography 
+                ? 'rgba(239, 68, 68, 0.8)' 
                 : isFocused.typography 
-                  ? '' 
-                  : 'text-gray-400 group-hover:text-gray-600'
-            }`} 
+                  ? 'rgba(198, 124, 78, 0.8)' 
+                  : 'rgba(49, 49, 49, 0.5)',
+            }}
           />
           <textarea
             id="typography"
@@ -436,29 +800,43 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             onFocus={() => setIsFocused({ ...isFocused, typography: true })}
             onBlur={() => setIsFocused({ ...isFocused, typography: false })}
             rows={3}
-            className={`input-elegant w-full pl-11 pr-4 py-3.5 rounded-xl border-2 outline-none transition-all duration-300 resize-none ${
-              errors.typography
-                ? 'border-red-300 focus:border-red-500'
-                : 'border-transparent'
-            }`}
-            style={errors.typography ? {
-              backgroundColor: 'rgba(239, 68, 68, 0.05)',
-              borderColor: '#fca5a5',
-              color: 'var(--color-text)',
-            } : {
-              backgroundColor: 'rgba(237, 237, 237, 0.6)',
-              borderColor: isFocused.typography ? 'var(--color-frame)' : 'rgba(198, 124, 78, 0.2)',
-              color: 'var(--color-text)',
-              boxShadow: isFocused.typography ? '0 4px 20px rgba(198, 124, 78, 0.12)' : '0 2px 8px rgba(49, 49, 49, 0.05)',
+            className="w-full pl-11 pr-4 rounded-lg border-2 outline-none transition-all duration-300 resize-none"
+            style={{
+              padding: '12px',
+              fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              backgroundColor: errors.typography 
+                ? 'rgba(239, 68, 68, 0.05)' 
+                : 'rgba(237, 237, 237, 0.8)',
+              borderColor: errors.typography 
+                ? 'rgba(239, 68, 68, 0.4)' 
+                : isFocused.typography 
+                  ? 'var(--color-frame)' 
+                  : 'transparent',
+              color: 'rgba(49, 49, 49, 0.75)',
+              boxShadow: isFocused.typography && !errors.typography 
+                ? '0 4px 20px rgba(198, 124, 78, 0.15)' 
+                : 'none',
             }}
             placeholder='e.g., &lt;link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"&gt;'
           />
         </div>
-        <div className="min-h-[20px] mt-1">
+        <div style={{ minHeight: '20px', marginTop: '4px' }}>
           {errors.typography && (
-            <p className="text-sm text-red-600">{errors.typography}</p>
+            <p style={{
+              fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+              color: 'rgba(239, 68, 68, 0.85)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+            }}>{errors.typography}</p>
           )}
-          <p className="text-xs text-gray-500 mt-1">
+          <p style={{
+            marginTop: '4px',
+            fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            color: 'rgba(49, 49, 49, 0.5)',
+          }}>
             Paste the Google Fonts link 
           </p>
         </div>
@@ -466,7 +844,15 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
 
       {/* Color Palette */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label 
+          className="block mb-2"
+          style={{
+            fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontWeight: 400,
+            color: 'rgba(49, 49, 49, 0.8)',
+          }}
+        >
           Color Palette
         </label>
         <div className="flex flex-wrap gap-3 items-center">
@@ -477,16 +863,34 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
                   type="color"
                   value={color}
                   onChange={(e) => handleColorChange(index, e.target.value)}
-                  className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                  className="rounded-lg cursor-pointer"
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    border: '2px solid rgba(198, 124, 78, 0.2)',
+                  }}
                 />
                 {colorPalette.length > 1 && (
                   <button
                     type="button"
                     onClick={() => handleRemoveColor(index)}
-                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors text-xs"
+                    className="absolute rounded-full transition-colors"
+                    style={{
+                      top: '-6px',
+                      right: '-6px',
+                      padding: '4px',
+                      backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                      color: 'white',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
+                    }}
                     aria-label="Remove color"
                   >
-                    <X className="w-3 h-3" />
+                    <X style={{ width: '12px', height: '12px' }} />
                   </button>
                 )}
               </div>
@@ -496,14 +900,33 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
             <button
               type="button"
               onClick={handleAddColor}
-              className="w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 hover:border-indigo-500 flex items-center justify-center text-gray-400 hover:text-indigo-600 transition-colors"
+              className="rounded-lg border-2 border-dashed flex items-center justify-center transition-colors"
+              style={{
+                width: '48px',
+                height: '48px',
+                borderColor: 'rgba(198, 124, 78, 0.3)',
+                color: 'rgba(49, 49, 49, 0.5)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-frame)';
+                e.currentTarget.style.color = 'var(--color-frame)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(198, 124, 78, 0.3)';
+                e.currentTarget.style.color = 'rgba(49, 49, 49, 0.5)';
+              }}
               aria-label="Add color"
             >
-              <Palette className="w-5 h-5" />
+              <Palette style={{ width: '20px', height: '20px' }} />
             </button>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-2">
+        <p style={{
+          marginTop: '8px',
+          fontSize: 'clamp(10px, 0.85vw + 0.5rem, 11px)',
+          fontFamily: 'var(--font-inter), sans-serif',
+          color: 'rgba(49, 49, 49, 0.5)',
+        }}>
           Click on a color to change it. Add up to 6 colors for your brand palette.
         </p>
       </div>
@@ -511,14 +934,28 @@ export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
       {/* Submit Button */}
       <button
         type="submit"
-        className="btn-elegant w-full py-3.5 rounded-xl font-semibold text-base tracking-wide relative overflow-hidden mt-8"
+        className="w-full rounded-lg relative overflow-hidden transition-all duration-300 flex items-center justify-center gap-2"
         style={{
+          marginTop: '32px',
+          padding: '14px',
+          fontSize: 'clamp(13px, 1.1vw + 0.5rem, 14px)',
+          fontFamily: 'var(--font-inter), sans-serif',
+          fontWeight: 400,
           backgroundColor: 'var(--color-frame)',
-          color: 'var(--color-background)',
+          color: 'rgba(237, 237, 237, 0.95)',
           boxShadow: '0 4px 16px rgba(198, 124, 78, 0.25)',
         }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 8px 24px rgba(198, 124, 78, 0.35)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 4px 16px rgba(198, 124, 78, 0.25)';
+        }}
       >
-        Complete Setup
+        Continue
+        <span style={{ fontSize: '16px' }}>→</span>
       </button>
     </form>
   );
