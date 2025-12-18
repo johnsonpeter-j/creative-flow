@@ -27,9 +27,11 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
   const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const [signupErrors, setSignupErrors] = useState({ name: '', email: '', password: '' });
-  const [isSignupFocused, setIsSignupFocused] = useState({ name: false, email: false, password: false });
+  const [showSignupConfirmPassword, setShowSignupConfirmPassword] = useState(false);
+  const [signupErrors, setSignupErrors] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [isSignupFocused, setIsSignupFocused] = useState({ name: false, email: false, password: false, confirmPassword: false });
   const [isSignupLoading, setIsSignupLoading] = useState(false);
 
   const validateEmail = (email: string): string => {
@@ -42,6 +44,13 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
   const validatePassword = (password: string): string => {
     if (!password) return 'Password is required';
     if (password.length < 6) return 'Password must be at least 6 characters';
+    if (password.length > 72) return 'Password must be less than 72 characters';
+    return '';
+  };
+
+  const validateConfirmPassword = (password: string, confirmPassword: string): string => {
+    if (!confirmPassword) return 'Please confirm your password';
+    if (password !== confirmPassword) return 'Passwords do not match';
     return '';
   };
 
@@ -78,13 +87,19 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
     const nameError = validateName(signupName);
     const emailError = validateEmail(signupEmail);
     const passwordError = validatePassword(signupPassword);
+    const confirmPasswordError = validateConfirmPassword(signupPassword, signupConfirmPassword);
     
-    if (nameError || emailError || passwordError) {
-      setSignupErrors({ name: nameError, email: emailError, password: passwordError });
+    if (nameError || emailError || passwordError || confirmPasswordError) {
+      setSignupErrors({ 
+        name: nameError, 
+        email: emailError, 
+        password: passwordError,
+        confirmPassword: confirmPasswordError
+      });
       return;
     }
     
-    setSignupErrors({ name: '', email: '', password: '' });
+    setSignupErrors({ name: '', email: '', password: '', confirmPassword: '' });
     setIsSignupLoading(true);
     try {
       await signupApi({ name: signupName, email: signupEmail, password: signupPassword } as SignupRequest);
@@ -217,6 +232,10 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
                 onChange={(e) => {
                   setSignupPassword(e.target.value);
                   if (signupErrors.password) setSignupErrors({ ...signupErrors, password: '' });
+                  // Clear confirm password error if passwords match
+                  if (signupErrors.confirmPassword && e.target.value === signupConfirmPassword) {
+                    setSignupErrors({ ...signupErrors, confirmPassword: '' });
+                  }
                 }}
                 onFocus={() => setIsSignupFocused({ ...isSignupFocused, password: true })}
                 onBlur={() => setIsSignupFocused({ ...isSignupFocused, password: false })}
@@ -231,6 +250,29 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
               </button>
             </div>
             {signupErrors.password && <span className="error-text">{signupErrors.password}</span>}
+            
+            <div className="input-box">
+              <input
+                type={showSignupConfirmPassword ? 'text' : 'password'}
+                placeholder="Confirm Password"
+                value={signupConfirmPassword}
+                onChange={(e) => {
+                  setSignupConfirmPassword(e.target.value);
+                  if (signupErrors.confirmPassword) setSignupErrors({ ...signupErrors, confirmPassword: '' });
+                }}
+                onFocus={() => setIsSignupFocused({ ...isSignupFocused, confirmPassword: true })}
+                onBlur={() => setIsSignupFocused({ ...isSignupFocused, confirmPassword: false })}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowSignupConfirmPassword(!showSignupConfirmPassword)}
+              >
+                {showSignupConfirmPassword ? <EyeOff className="input-icon" /> : <Eye className="input-icon" />}
+              </button>
+            </div>
+            {signupErrors.confirmPassword && <span className="error-text">{signupErrors.confirmPassword}</span>}
             
             <div style={{ marginTop: '38px' }}>
               <button type="submit" className="btn" disabled={isSignupLoading}>
@@ -273,4 +315,5 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
     </div>
   );
 }
+
 

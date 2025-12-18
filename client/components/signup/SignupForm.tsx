@@ -55,6 +55,9 @@ export default function SignupForm({ onSubmit }: SignupFormProps) {
     if (password.length < 6) {
       return 'Password must be at least 6 characters';
     }
+    if (password.length > 72) {
+      return 'Password must be less than 72 characters';
+    }
     return '';
   };
 

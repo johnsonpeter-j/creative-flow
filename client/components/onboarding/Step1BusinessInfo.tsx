@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Building2, Briefcase, Upload, X } from 'lucide-react';
+import { Building2, Briefcase, Upload, X, ChevronDown } from 'lucide-react';
 
 interface Step1BusinessInfoProps {
   data: {
@@ -13,6 +13,8 @@ interface Step1BusinessInfoProps {
     city: string;
     zip: string;
     industry: string;
+    businessAddressType?: string;
+    businessType?: string;
   };
   onChange: (data: any) => void;
   errors: Record<string, string>;
@@ -270,6 +272,107 @@ export default function Step1BusinessInfo({ data, onChange, errors }: Step1Busin
         </div>
       </div>
 
+      {/* Business Address Type and Business Type - Two Column Layout */}
+      <div className="onboarding-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        {/* Business Address Dropdown */}
+        <div>
+          <label 
+            htmlFor="businessAddress" 
+            className="block mb-2"
+            style={{
+              fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              color: 'rgba(49, 49, 49, 0.8)',
+            }}
+          >
+            Business address
+          </label>
+          <div className="relative">
+            <select
+              id="businessAddress"
+              value={data.businessAddressType || ''}
+              onChange={(e) => onChange({ ...data, businessAddressType: e.target.value })}
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300"
+              style={{
+                padding: '12px 16px',
+                paddingRight: '40px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                borderColor: 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+                appearance: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="">Registered business address</option>
+              <option value="registered">Registered business address</option>
+              <option value="operating">Operating business address</option>
+            </select>
+            <ChevronDown 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+              style={{
+                width: '16px',
+                height: '16px',
+                color: 'rgba(49, 49, 49, 0.5)',
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Type of Business Dropdown */}
+        <div>
+          <label 
+            htmlFor="businessType" 
+            className="block mb-2"
+            style={{
+              fontSize: 'clamp(12px, 1vw + 0.5rem, 14px)',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontWeight: 400,
+              color: 'rgba(49, 49, 49, 0.8)',
+            }}
+          >
+            Type
+          </label>
+          <div className="relative">
+            <select
+              id="businessType"
+              value={data.businessType || ''}
+              onChange={(e) => onChange({ ...data, businessType: e.target.value })}
+              className="w-full rounded-lg border-2 outline-none transition-all duration-300"
+              style={{
+                padding: '12px 16px',
+                paddingRight: '40px',
+                fontSize: 'clamp(12px, 1.1vw + 0.5rem, 14px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 400,
+                backgroundColor: 'rgba(237, 237, 237, 0.8)',
+                borderColor: 'rgba(198, 124, 78, 0.2)',
+                color: 'rgba(49, 49, 49, 0.75)',
+                appearance: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="">Type of business</option>
+              <option value="sole">Sole Proprietorship</option>
+              <option value="partnership">Partnership</option>
+              <option value="llc">LLC</option>
+              <option value="corporation">Corporation</option>
+            </select>
+            <ChevronDown 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+              style={{
+                width: '16px',
+                height: '16px',
+                color: 'rgba(49, 49, 49, 0.5)',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Address Section */}
       <div>
         <label 
@@ -404,3 +507,4 @@ export default function Step1BusinessInfo({ data, onChange, errors }: Step1Busin
     </div>
   );
 }
+

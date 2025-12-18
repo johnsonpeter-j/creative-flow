@@ -6,7 +6,7 @@ class SignupRequest(BaseModel):
     """Signup request schema"""
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
-    password: str = Field(..., min_length=6)
+    password: str = Field(..., min_length=6, max_length=72)  # Bcrypt has 72-byte limit
 
 
 class LoginRequest(BaseModel):
@@ -23,7 +23,7 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     """Reset password request schema"""
     token: str
-    password: str = Field(..., min_length=6)
+    password: str = Field(..., min_length=6, max_length=72)  # Bcrypt has 72-byte limit
 
 
 class UserResponse(BaseModel):
@@ -38,4 +38,5 @@ class AuthResponse(BaseModel):
     token: Optional[str] = None
     user: Optional[UserResponse] = None
     message: Optional[str] = None
+
 

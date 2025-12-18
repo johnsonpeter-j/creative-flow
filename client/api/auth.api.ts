@@ -1,5 +1,6 @@
 import axiosInstance from './axios';
 import { showSuccessToast, showErrorToast } from '@/hooks/useToast';
+import { setAuthToken, removeAuthToken } from '@/lib/cookies';
 
 export interface LoginRequest {
   email: string;
@@ -37,10 +38,8 @@ export const loginApi = async (data: LoginRequest): Promise<AuthResponse> => {
     const response = await axiosInstance.post<AuthResponse>('/auth/login', data);
     
     if (response.data.token) {
-      // Store token in localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', response.data.token);
-      }
+      // Store token in cookie
+      setAuthToken(response.data.token);
       showSuccessToast('Login successful!');
     }
     
@@ -56,6 +55,12 @@ export const loginApi = async (data: LoginRequest): Promise<AuthResponse> => {
 export const signupApi = async (data: SignupRequest): Promise<AuthResponse> => {
   try {
     const response = await axiosInstance.post<AuthResponse>('/auth/signup', data);
+    
+    // If token is returned after signup, store it
+    if (response.data.token) {
+      setAuthToken(response.data.token);
+    }
+    
     showSuccessToast('Account created successfully!');
     return response.data;
   } catch (error: any) {
@@ -95,16 +100,12 @@ export const resetPasswordApi = async (data: ResetPasswordRequest): Promise<{ me
 export const logoutApi = async (): Promise<void> => {
   try {
     await axiosInstance.post('/auth/logout');
-    // Clear token from localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-    }
+    // Clear token from cookies
+    removeAuthToken();
     showSuccessToast('Logged out successfully!');
   } catch (error: any) {
-    // Even if API call fails, clear local token
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-    }
+    // Even if API call fails, clear token from cookies
+    removeAuthToken();
     const errorMessage = error.response?.data?.message || 'Logout failed.';
     showErrorToast(errorMessage);
     throw error;

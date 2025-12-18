@@ -14,7 +14,15 @@ async def create_or_update_onboarding(
     logo_position: str = Form(...),
     typography: str = Form(...),
     color_palette: str = Form(...),  # JSON string
+    font_type: Optional[str] = Form(None),
+    address_line1: Optional[str] = Form(None),
+    address_line2: Optional[str] = Form(None),
+    city: Optional[str] = Form(None),
+    zip: Optional[str] = Form(None),
+    business_address_type: Optional[str] = Form(None),
+    business_type: Optional[str] = Form(None),
     logo: Optional[UploadFile] = File(None),
+    font_file: Optional[UploadFile] = File(None),
     user_id: str = Depends(get_current_user_id),
     onboarding_service: OnboardingService = Depends(get_onboarding_service)
 ):
@@ -35,13 +43,21 @@ async def create_or_update_onboarding(
         industry=industry,
         logo_position=logo_position,
         typography=typography,
-        color_palette=color_palette_list
+        font_type=font_type,
+        color_palette=color_palette_list,
+        address_line1=address_line1,
+        address_line2=address_line2,
+        city=city,
+        zip=zip,
+        business_address_type=business_address_type,
+        business_type=business_type
     )
     
     result = await onboarding_service.create_or_update_onboarding(
         user_id=user_id,
         onboarding_data=onboarding_data,
-        logo_file=logo
+        logo_file=logo,
+        font_file=font_file
     )
     
     return OnboardingResponse(**result)
@@ -59,4 +75,5 @@ async def get_onboarding(
         return OnboardingResponse(message="No onboarding data found")
     
     return OnboardingResponse(**result)
+
 

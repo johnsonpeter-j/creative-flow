@@ -4,6 +4,7 @@ import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import ToastProvider from "@/components/providers/ToastProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import ReduxProvider from "@/components/providers/ReduxProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -39,11 +40,13 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${roboto.variable} ${inconsolata.variable} antialiased`}
       >
-        <ThemeProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </ThemeProvider>
+        <ReduxProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </ThemeProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

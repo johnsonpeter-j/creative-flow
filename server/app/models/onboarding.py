@@ -13,7 +13,16 @@ class OnboardingModel(BaseModel):
     logo_url: Optional[str] = None
     logo_position: str
     typography: str
+    font_type: Optional[str] = None  # 'dropdown' | 'google' | 'upload'
+    font_file_url: Optional[str] = None  # URL to uploaded font file
     color_palette: List[str] = Field(default_factory=list)
+    # Address fields
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    zip: Optional[str] = None
+    business_address_type: Optional[str] = None  # 'registered' | 'operating'
+    business_type: Optional[str] = None  # 'sole' | 'partnership' | 'llc' | 'corporation'
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -28,4 +37,5 @@ class OnboardingModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True
     )
+
 

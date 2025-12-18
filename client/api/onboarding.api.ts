@@ -7,7 +7,15 @@ export interface OnboardingRequest {
   logo?: File;
   logoPosition: string;
   typography: string;
+  fontType?: 'dropdown' | 'google' | 'upload';
+  fontFile?: File;
   colorPalette: string[];
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  zip?: string;
+  businessAddressType?: string;
+  businessType?: string;
 }
 
 export interface OnboardingResponse {
@@ -19,7 +27,15 @@ export interface OnboardingResponse {
     logoUrl?: string;
     logoPosition: string;
     typography: string;
+    fontType?: string;
+    fontFileUrl?: string;
     colorPalette: string[];
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    zip?: string;
+    businessAddressType?: string;
+    businessType?: string;
   };
 }
 
@@ -28,14 +44,41 @@ export const onboardingApi = async (data: OnboardingRequest): Promise<Onboarding
   try {
     // Create FormData for file upload
     const formData = new FormData();
-    formData.append('brandName', data.brandName);
+    formData.append('brand_name', data.brandName);
     formData.append('industry', data.industry);
-    formData.append('logoPosition', data.logoPosition);
+    formData.append('logo_position', data.logoPosition);
     formData.append('typography', data.typography);
-    formData.append('colorPalette', JSON.stringify(data.colorPalette));
+    formData.append('color_palette', JSON.stringify(data.colorPalette));
+    
+    if (data.fontType) {
+      formData.append('font_type', data.fontType);
+    }
+    
+    if (data.addressLine1) {
+      formData.append('address_line1', data.addressLine1);
+    }
+    if (data.addressLine2) {
+      formData.append('address_line2', data.addressLine2);
+    }
+    if (data.city) {
+      formData.append('city', data.city);
+    }
+    if (data.zip) {
+      formData.append('zip', data.zip);
+    }
+    if (data.businessAddressType) {
+      formData.append('business_address_type', data.businessAddressType);
+    }
+    if (data.businessType) {
+      formData.append('business_type', data.businessType);
+    }
     
     if (data.logo) {
       formData.append('logo', data.logo);
+    }
+    
+    if (data.fontFile) {
+      formData.append('font_file', data.fontFile);
     }
 
     const response = await axiosInstance.post<OnboardingResponse>('/onboarding', formData, {

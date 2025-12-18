@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingNav from '@/components/onboarding/OnboardingNav';
 import ProgressIndicator from '@/components/onboarding/ProgressIndicator';
@@ -8,40 +8,38 @@ import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
 import Step1BusinessInfo from '@/components/onboarding/Step1BusinessInfo';
 import Step3DesignPreferences from '@/components/onboarding/Step3DesignPreferences';
 import Step4Review from '@/components/onboarding/Step4Review';
-import { onboardingApi } from '@/api/onboarding.api';
+import { useOnboardingStore } from '@/store/onboardingStore';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { submitOnboarding, fetchOnboarding } from '@/store/slices/onboardingSlice';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
+  const dispatch = useAppDispatch();
+  const { loading, error, success } = useAppSelector((state) => state.onboarding);
+  
+  // Zustand store for UI state
+  const {
+    formData,
+    currentStep,
+    errors,
+    updateFormData,
+    setCurrentStep,
+    setErrors,
+  } = useOnboardingStore();
+  
   const totalSteps = 3;
 
-  const [formData, setFormData] = useState({
-    // Step 1
-    businessName: '',
-    logo: null as File | null,
-    logoPreview: null as string | null,
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    zip: '',
-    industry: '',
-    // Step 2 (formerly Step 3)
-    logoPosition: 'Top Left',
-    fontType: 'dropdown' as 'dropdown' | 'google' | 'upload',
-    fontValue: '',
-    fontFile: null as File | null,
-    colors: {
-      primary: '#6366f1',
-      secondary: '#8b5cf6',
-      background: '#ffffff',
-      text: '#111827',
-    },
-  });
+  // Fetch existing onboarding data on mount
+  useEffect(() => {
+    dispatch(fetchOnboarding());
+  }, [dispatch]);
 
-  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({
-    step1: {},
-    step2: {},
-  });
+  // Redirect on success
+  useEffect(() => {
+    if (success) {
+      router.push('/dashboard');
+    }
+  }, [success, router]);
 
   const validateStep1 = (): boolean => {
     const stepErrors: Record<string, string> = {};
@@ -90,20 +88,32 @@ export default function OnboardingPage() {
   };
 
   const handleComplete = async () => {
-    try {
-      await onboardingApi({
-        brandName: formData.businessName,
-        industry: formData.industry,
-        logo: formData.logo || undefined,
-        logoPosition: formData.logoPosition,
-        typography: formData.fontType === 'google' ? formData.fontValue : formData.fontType === 'dropdown' ? formData.fontValue : '',
-        colorPalette: [formData.colors.primary, formData.colors.secondary, formData.colors.background, formData.colors.text],
-      });
-      // After successful submission, redirect to dashboard or next step
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Onboarding submission failed:', error);
+    // Build typography value based on font type
+    let typography = '';
+    if (formData.fontType === 'google') {
+      typography = formData.fontValue;
+    } else if (formData.fontType === 'dropdown') {
+      typography = formData.fontValue;
     }
+    // For upload, typography can be empty or contain font file name
+    
+    // Dispatch Redux thunk for API call
+    await dispatch(submitOnboarding({
+      brandName: formData.businessName,
+      industry: formData.industry,
+      logo: formData.logo || undefined,
+      logoPosition: formData.logoPosition,
+      typography: typography,
+      fontType: formData.fontType,
+      fontFile: formData.fontFile || undefined,
+      colorPalette: [formData.colors.primary, formData.colors.secondary, formData.colors.background, formData.colors.text],
+      addressLine1: formData.addressLine1 || undefined,
+      addressLine2: formData.addressLine2 || undefined,
+      city: formData.city || undefined,
+      zip: formData.zip || undefined,
+      businessAddressType: formData.businessAddressType || undefined,
+      businessType: formData.businessType || undefined,
+    }));
   };
 
   const getStepTitle = () => {
@@ -216,8 +226,10 @@ export default function OnboardingPage() {
                     city: formData.city,
                     zip: formData.zip,
                     industry: formData.industry,
+                    businessAddressType: formData.businessAddressType,
+                    businessType: formData.businessType,
                   }}
-                  onChange={(data) => setFormData({ ...formData, ...data })}
+                  onChange={(data) => updateFormData(data)}
                   errors={errors.step1}
                 />
               )}
@@ -231,7 +243,7 @@ export default function OnboardingPage() {
                     fontFile: formData.fontFile,
                     colors: formData.colors,
                   }}
-                  onChange={(data) => setFormData({ ...formData, ...data })}
+                  onChange={(data) => updateFormData(data)}
                   errors={errors.step2}
                 />
               )}
@@ -315,26 +327,32 @@ export default function OnboardingPage() {
                 <button
                   type="button"
                   onClick={handleComplete}
+                  disabled={loading}
                   className="rounded-lg relative overflow-hidden transition-all duration-300 flex items-center justify-center gap-2 ml-auto"
                   style={{
                     padding: '14px 24px',
                     fontSize: 'clamp(13px, 1.1vw + 0.5rem, 14px)',
                     fontFamily: 'var(--font-inter), sans-serif',
                     fontWeight: 400,
-                    backgroundColor: 'var(--color-frame)',
+                    backgroundColor: loading ? 'rgba(198, 124, 78, 0.5)' : 'var(--color-frame)',
                     color: 'rgba(237, 237, 237, 0.95)',
                     boxShadow: '0 4px 16px rgba(198, 124, 78, 0.25)',
+                    cursor: loading ? 'not-allowed' : 'pointer',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(198, 124, 78, 0.35)';
+                    if (!loading) {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(198, 124, 78, 0.35)';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(198, 124, 78, 0.25)';
+                    if (!loading) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(198, 124, 78, 0.25)';
+                    }
                   }}
                 >
-                  Complete Setup
+                  {loading ? 'Submitting...' : 'Complete Setup'}
                 </button>
               )}
             </div>

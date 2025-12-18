@@ -1,22 +1,79 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from app.core.config import settings
 from app.core.exceptions import UnauthorizedError
 import secrets
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def _truncate_password_for_bcrypt(password: str) -> str:
+    """
+    Truncate password to ensure it's within bcrypt's 72-byte limit.
+    Truncates character by character until byte length is <= 72.
+    """
+    if not password:
+        return password
+    
+    # Check byte length
+    password_bytes = password.encode('utf-8')
+    
+    # If already within limit, return as-is
+    if len(password_bytes) <= 72:
+        return password
+    
+    # Truncate character by character until we're under 72 bytes
+    # This ensures we don't cut UTF-8 characters in the middle
+    truncated = password
+    while len(truncated.encode('utf-8')) > 72:
+        if len(truncated) <= 1:
+            # Safety: if we've truncated everything, return a single character
+            return password[0] if password else "a"
+        truncated = truncated[:-1]
+    
+    # Final verification
+    final_bytes = truncated.encode('utf-8')
+    if len(final_bytes) > 72:
+        # Emergency: truncate bytes directly
+        final_bytes = final_bytes[:72]
+        # Remove incomplete UTF-8 sequences
+        while final_bytes:
+            try:
+                return final_bytes.decode('utf-8')
+            except UnicodeDecodeError:
+                final_bytes = final_bytes[:-1]
+        return password[0] if password else "a"
+    
+    return truncated
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against a hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    # Bcrypt has a 72-byte limit, so truncate if necessary
+    plain_password = _truncate_password_for_bcrypt(plain_password)
+    # Use bcrypt directly
+    password_bytes = plain_password.encode('utf-8')
+    hash_bytes = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(password_bytes, hash_bytes)
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password"""
-    return pwd_context.hash(password)
+    """Hash a password using bcrypt"""
+    # Bcrypt has a 72-byte limit, so truncate if necessary
+    password = _truncate_password_for_bcrypt(password)
+    
+    # Encode to bytes for bcrypt
+    password_bytes = password.encode('utf-8')
+    
+    # Final safety check: ensure password is definitely <= 72 bytes
+    if len(password_bytes) > 72:
+        # Emergency fallback: truncate bytes directly
+        password_bytes = password_bytes[:72]
+    
+    # Use bcrypt directly instead of passlib to avoid initialization issues
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -44,4 +101,5 @@ def decode_access_token(token: str) -> dict:
 def generate_password_reset_token() -> str:
     """Generate a secure password reset token"""
     return secrets.token_urlsafe(32)
+
 
