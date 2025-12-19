@@ -1,7 +1,5 @@
 'use client';
 
-import AppBar from '@/components/campaign/AppBar';
-
 export default function MainLayout({
   children,
 }: {
@@ -9,7 +7,6 @@ export default function MainLayout({
 }) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppBar />
       {children}
     </div>
   );

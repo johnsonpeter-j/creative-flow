@@ -266,6 +266,34 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Custom Scrollbar for Webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-frame);
+  background-clip: content-box;
+}
+
+/* Custom Scrollbar for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) rgba(0, 0, 0, 0.05);
+}
+
 /* Selection color */
 ::selection {
   background: rgba(198, 124, 78, 0.2);

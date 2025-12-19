@@ -41,11 +41,11 @@ export default function RootLayout({
         className={`${inter.variable} ${roboto.variable} ${inconsolata.variable} antialiased`}
       >
         <ReduxProvider>
-          <ThemeProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </ThemeProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
         </ReduxProvider>
       </body>
     </html>
