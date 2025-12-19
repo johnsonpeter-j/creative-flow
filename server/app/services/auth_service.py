@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 from app.repositories.user_repository import UserRepository
@@ -10,6 +11,7 @@ from app.core.security import (
 )
 from app.core.exceptions import UnauthorizedError, NotFoundError, ValidationError
 from app.core.config import settings
+from app.utils.email import send_email, FORGOT_PASSWORD
 
 
 class AuthService:
@@ -87,10 +89,29 @@ class AuthService:
             expires_at
         )
         
-        # In production, send email with reset link
-        # For now, we'll just return success message
-        # TODO: Implement email service
+        # Build reset password URL
+        client_url = os.getenv("CLIENT_URL", "http://localhost:3000")
+        reset_link = f"{client_url}/reset-password/{reset_token}"
         
+        # Prepare email message data
+        message_data = [
+            {"key": "user_name", "value": user.name},
+            {"key": "RESET_LINK", "value": reset_link}
+        ]
+        
+        # Send password reset email
+        try:
+            send_email(
+                to_address=user.email,
+                subject="Reset Your Password - Creative Flow",
+                body_type=FORGOT_PASSWORD,
+                message_data=message_data
+            )
+        except Exception as e:
+            # Log error but don't fail the request
+            # In production, you might want to use a proper logging system
+            print(f"Failed to send password reset email: {str(e)}")
+
         return {"message": "If the email exists, a password reset link has been sent"}
     
     async def reset_password(self, reset_password_data: ResetPasswordRequest) -> dict:

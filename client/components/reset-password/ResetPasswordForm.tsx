@@ -5,9 +5,10 @@ import { Lock, Eye, EyeOff } from 'lucide-react';
 
 interface ResetPasswordFormProps {
   onSubmit: (password: string) => void;
+  loading?: boolean;
 }
 
-export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
+export default function ResetPasswordForm({ onSubmit, loading = false }: ResetPasswordFormProps) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -210,14 +211,15 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
       {/* Submit Button */}
       <button
         type="submit"
-        className="btn-elegant w-full py-3.5 rounded-xl font-semibold text-base tracking-wide relative overflow-hidden"
+        disabled={loading}
+        className="btn-elegant w-full py-3.5 rounded-xl font-semibold text-base tracking-wide relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           backgroundColor: 'var(--color-frame)',
           color: 'var(--color-background)',
           boxShadow: '0 4px 16px rgba(198, 124, 78, 0.25)',
         }}
       >
-        Reset Password
+        {loading ? 'Resetting Password...' : 'Reset Password'}
       </button>
     </form>
   );

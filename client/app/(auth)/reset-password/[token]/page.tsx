@@ -2,22 +2,28 @@
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { resetPasswordThunk } from '@/store/slices/authThunk';
 import ResetPasswordHeader from '@/components/reset-password/ResetPasswordHeader';
 import ResetPasswordForm from '@/components/reset-password/ResetPasswordForm';
 
 export default function ResetPasswordPage() {
   const params = useParams();
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { loading } = useAppSelector((state) => state.auth);
   const token = params.token as string;
 
-  const handleSubmit = (password: string) => {
-    // TODO: Backend API call to reset password using the token
-    // The backend should:
-    // 1. Verify the JWT token
-    // 2. Update the user's password
-    console.log('Reset password submitted:', { token, password });
-    // After successful API call, redirect to login page
-    // router.push('/');
+  const handleSubmit = async (password: string) => {
+    try {
+      await dispatch(resetPasswordThunk({ token, password })).unwrap();
+      // Success is handled by the thunk (toast notification)
+      // Redirect to login page after successful password reset
+      router.push('/login');
+    } catch (err) {
+      // Error is already handled by the thunk (toast notification)
+      console.error('Reset password failed:', err);
+    }
   };
 
   return (
@@ -40,7 +46,7 @@ export default function ResetPasswordPage() {
       >
         <ResetPasswordHeader />
         <div className="mt-8">
-          <ResetPasswordForm onSubmit={handleSubmit} />
+          <ResetPasswordForm onSubmit={handleSubmit} loading={loading} />
         </div>
       </div>
     </div>

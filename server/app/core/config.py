@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     APP_NAME: str = "Creative Flow API"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
+
+    # url 
+    SERVER_URL:str = "http://localhost:8000"
+    CLIENT_URL:str = "http://localhost:3000"
     
     # API
     API_V1_PREFIX: str = "/api"
@@ -24,6 +28,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
     
     # Password Reset
+    EMAIL_ADDRESS:str = "your-email-id"
+    EMAIL_PASSWORD:str = "your-app-password"
     PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 24
     
     # File Upload
@@ -33,6 +39,10 @@ class Settings(BaseSettings):
     # Store as strings to avoid JSON parsing issues - these will be parsed in computed properties
     ALLOWED_EXTENSIONS_STR: str = ".jpg,.jpeg,.png,.svg,.gif"
     CORS_ORIGINS_STR: str = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
+
+    # company details
+    COMPANY_NAME = "your_company_name"
+    COMPANY_ADDRESS = "your_company_address"
     
     @computed_field
     @property

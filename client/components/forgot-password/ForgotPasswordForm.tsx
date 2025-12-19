@@ -5,9 +5,10 @@ import { Mail } from 'lucide-react';
 
 interface ForgotPasswordFormProps {
   onSubmit: (email: string) => void;
+  loading?: boolean;
 }
 
-export default function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
+export default function ForgotPasswordForm({ onSubmit, loading = false }: ForgotPasswordFormProps) {
   const [email, setEmail] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [error, setError] = useState('');
@@ -95,17 +96,21 @@ export default function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps
       {/* Submit Button */}
       <button
         type="submit"
-        className="btn-elegant w-full py-3.5 rounded-xl font-semibold text-base tracking-wide relative overflow-hidden"
+        disabled={loading}
+        className="btn-elegant w-full py-3.5 rounded-xl font-semibold text-base tracking-wide relative overflow-hidden transition-all duration-300"
         style={{
-          backgroundColor: 'var(--color-frame)',
+          backgroundColor: loading ? 'rgba(198, 124, 78, 0.5)' : 'var(--color-frame)',
           color: 'var(--color-background)',
-          boxShadow: '0 4px 16px rgba(198, 124, 78, 0.25)',
+          boxShadow: loading ? 'none' : '0 4px 16px rgba(198, 124, 78, 0.25)',
+          cursor: loading ? 'not-allowed' : 'pointer',
+          opacity: loading ? 0.7 : 1,
         }}
       >
-        Send Reset Link
+        {loading ? 'Sending...' : 'Send Reset Link'}
       </button>
     </form>
   );
 }
+
 
 

@@ -2,20 +2,25 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { forgotPasswordThunk } from '@/store/slices/authThunk';
 import ForgotPasswordHeader from '@/components/forgot-password/ForgotPasswordHeader';
 import ForgotPasswordForm from '@/components/forgot-password/ForgotPasswordForm';
 import LoginLink from '@/components/forgot-password/LoginLink';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector((state) => state.auth);
 
-  const handleSubmit = (email: string) => {
-    // TODO: Backend API call to send reset password email with JWT token
-    // The backend should:
-    // 1. Generate a JWT token
-    // 2. Send email with link: /reset-password/:token
-    console.log('Forgot password submitted:', { email });
-    // After successful API call, you might want to show a success message
+  const handleSubmit = async (email: string) => {
+    try {
+      await dispatch(forgotPasswordThunk({ email })).unwrap();
+      // Success is handled by the thunk (toast notification)
+    } catch (err) {
+      // Error is already handled by the thunk (toast notification)
+      console.error('Forgot password failed:', err);
+    }
   };
 
   const handleLogin = () => {
@@ -42,7 +47,7 @@ export default function ForgotPasswordPage() {
       >
         <ForgotPasswordHeader />
         <div className="mt-8">
-          <ForgotPasswordForm onSubmit={handleSubmit} />
+          <ForgotPasswordForm onSubmit={handleSubmit} loading={loading} />
         </div>
         <LoginLink onLoginClick={handleLogin} />
       </div>
