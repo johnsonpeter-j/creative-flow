@@ -14,7 +14,7 @@ from app.core.exception_handlers import (
     validation_exception_handler,
     general_exception_handler
 )
-from app.routes import auth, onboarding, campaign
+from app.routes import auth, onboarding, campaign, execution
 from fastapi.exceptions import RequestValidationError
 
 # Configure logging
@@ -61,6 +61,7 @@ app.add_exception_handler(Exception, general_exception_handler)
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(onboarding.router, prefix=settings.API_V1_PREFIX)
 app.include_router(campaign.router, prefix=settings.API_V1_PREFIX)
+app.include_router(execution.router, prefix=settings.API_V1_PREFIX)
 
 # Create uploads directory if it doesn't exist
 uploads_dir = Path(settings.UPLOAD_DIR)
