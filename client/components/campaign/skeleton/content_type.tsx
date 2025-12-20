@@ -5,12 +5,24 @@ import React, { useState } from 'react';
 interface ContentTypeProps {
   campaignBrief: string;
   setCampaignBrief: (brief: string) => void;
+  objective: string;
+  setObjective: (objective: string) => void;
+  targetAudience: string;
+  setTargetAudience: (audience: string) => void;
+  adFormats: string[];
+  setAdFormats: (formats: string[]) => void;
 }
 
-const ContentType: React.FC<ContentTypeProps> = ({ campaignBrief, setCampaignBrief }) => {
-  const [objective, setObjective] = useState<string>('Awareness');
-  const [targetAudience, setTargetAudience] = useState<string>('');
-  const [adFormats, setAdFormats] = useState<string[]>([]);
+const ContentType: React.FC<ContentTypeProps> = ({ 
+  campaignBrief, 
+  setCampaignBrief,
+  objective,
+  setObjective,
+  targetAudience,
+  setTargetAudience,
+  adFormats,
+  setAdFormats
+}) => {
   const [campaignBriefError, setCampaignBriefError] = useState<string | null>(null);
 
   const handleCampaignBriefChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

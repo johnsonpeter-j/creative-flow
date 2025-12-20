@@ -3,7 +3,7 @@ import { getAuthToken, removeAuthToken } from '@/lib/cookies';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
-  timeout: 10000,
+  timeout: 120000, // 120 seconds - increased for AI generation tasks
   headers: {
     'Content-Type': 'application/json',
   },
