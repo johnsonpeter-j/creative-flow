@@ -74,7 +74,8 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
     setIsLoginLoading(true);
     try {
       await loginApi({ email: loginEmail, password: loginPassword } as LoginRequest);
-      router.push('/onboarding');
+      router.push('/');
+      window.location.reload();
     } catch (error) {
       console.error('Login failed:', error);
     } finally {
@@ -103,7 +104,8 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
     setIsSignupLoading(true);
     try {
       await signupApi({ name: signupName, email: signupEmail, password: signupPassword } as SignupRequest);
-      router.push('/onboarding');
+      router.push('/');
+      window.location.reload();
     } catch (error) {
       console.error('Signup failed:', error);
     } finally {
@@ -315,5 +317,3 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
     </div>
   );
 }
-
-

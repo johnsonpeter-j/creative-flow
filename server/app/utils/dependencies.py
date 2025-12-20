@@ -5,6 +5,7 @@ from app.core.database import get_database
 from app.core.security import decode_access_token
 from app.repositories.user_repository import UserRepository
 from app.repositories.onboarding_repository import OnboardingRepository
+from app.repositories.campaign_repository import CampaignRepository
 from app.services.auth_service import AuthService
 from app.services.onboarding_service import OnboardingService
 from app.core.exceptions import UnauthorizedError
@@ -34,6 +35,11 @@ def get_user_repository(db: AsyncIOMotorDatabase = Depends(get_database)) -> Use
 def get_onboarding_repository(db: AsyncIOMotorDatabase = Depends(get_database)) -> OnboardingRepository:
     """Get onboarding repository instance"""
     return OnboardingRepository(db)
+
+
+def get_campaign_repository(db: AsyncIOMotorDatabase = Depends(get_database)) -> CampaignRepository:
+    """Get campaign repository instance"""
+    return CampaignRepository(db)
 
 
 def get_auth_service(

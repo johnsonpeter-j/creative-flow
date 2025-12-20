@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { checkAuth, logout } from '@/store/slices/authSlice';
+import { checkAuth, logout as logoutAction } from '@/store/slices/authSlice';
 import { getAuthToken } from '@/lib/cookies';
+import { useRouter } from 'next/navigation';
 
 /**
  * Hook to manage authentication state
@@ -9,21 +10,27 @@ import { getAuthToken } from '@/lib/cookies';
  */
 export const useAuth = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { token, isAuthenticated } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     // Check authentication status on mount
-    dispatch(checkAuth());
+    if (typeof window !== 'undefined') {
+      dispatch(checkAuth());
+    }
   }, [dispatch]);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const logout = () => {
+    if (typeof window !== 'undefined') {
+      dispatch(logoutAction());
+      router.push('/');
+    }
   };
 
   return {
     token,
     isAuthenticated,
-    logout: handleLogout,
+    logout,
   };
 };
 
@@ -37,12 +44,13 @@ export const useIsAuthenticated = (): boolean => {
 
   useEffect(() => {
     // Verify auth status on mount
-    const token = getAuthToken();
-    if (token && !isAuthenticated) {
-      dispatch(checkAuth());
+    if (typeof window !== 'undefined') {
+      const token = getAuthToken();
+      if (token && !isAuthenticated) {
+        dispatch(checkAuth());
+      }
     }
   }, [dispatch, isAuthenticated]);
 
   return isAuthenticated;
 };
-
