@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { LayoutDashboard, User, Settings, Bell } from 'lucide-react';
+import { LayoutDashboard, User, Settings, Bell, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Notification {
   id: string;
@@ -49,6 +50,7 @@ const isPathActive = (itemPath: string, currentPath: string): boolean => {
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { logout } = useAuth();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([
     {
@@ -270,7 +272,36 @@ export default function Sidebar() {
           </button>
         );
       })}
+
+      <button
+        onClick={logout}
+        className="relative flex items-center justify-center transition-all duration-200 group"
+        style={{
+          width: '56px',
+          height: '56px',
+          borderRadius: '16px',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          color: 'rgba(49, 49, 49, 0.7)',
+          boxShadow: '0 2px 8px rgba(49, 49, 49, 0.1)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+          e.currentTarget.style.color = 'var(--color-frame)';
+          e.currentTarget.style.boxShadow = '0 4px 16px rgba(198, 124, 78, 0.2)';
+          e.currentTarget.style.transform = 'translateY(-2px)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+          e.currentTarget.style.color = 'rgba(49, 49, 49, 0.7)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(49, 49, 49, 0.1)';
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
+        title="Logout"
+      >
+        <div style={{ width: '24px', height: '24px' }}>
+          <LogOut />
+        </div>
+      </button>
     </div>
   );
 }
-
