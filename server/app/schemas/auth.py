@@ -40,3 +40,8 @@ class AuthResponse(BaseModel):
     message: Optional[str] = None
 
 
+class UpdateProfileRequest(BaseModel):
+    """Update profile request schema"""
+    name: str = Field(..., min_length=2, max_length=100)
+
+

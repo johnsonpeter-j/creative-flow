@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Building2, Briefcase, Image, Layout, Type, Palette, Upload, X, ChevronDown } from 'lucide-react';
+import { LOGO_POSITIONS } from '@/lib/constants';
 
 interface OnboardingFormProps {
   onSubmit: (data: {
@@ -13,15 +14,6 @@ interface OnboardingFormProps {
     colorPalette: string[];
   }) => void;
 }
-
-const LOGO_POSITIONS = [
-  'Top Left',
-  'Top Middle',
-  'Top Right',
-  'Bottom Left',
-  'Bottom Middle',
-  'Bottom Right',
-] as const;
 
 export default function OnboardingForm({ onSubmit }: OnboardingFormProps) {
   const [brandName, setBrandName] = useState('');

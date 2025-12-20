@@ -4,7 +4,8 @@ from app.schemas.auth import (
     LoginRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
-    AuthResponse
+    AuthResponse,
+    UpdateProfileRequest
 )
 from app.services.auth_service import AuthService
 from app.utils.dependencies import get_auth_service, get_current_user_id
@@ -59,6 +60,17 @@ async def verify_token(
 ):
     """Verify JWT token and return user info"""
     result = await auth_service.verify_token(user_id)
+    return AuthResponse(**result)
+
+
+@router.put("/profile", response_model=AuthResponse)
+async def update_profile(
+    profile_data: UpdateProfileRequest,
+    user_id: str = Depends(get_current_user_id),
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    """Update user profile"""
+    result = await auth_service.update_profile(user_id, profile_data.name)
     return AuthResponse(**result)
 
 

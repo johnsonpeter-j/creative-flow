@@ -41,8 +41,8 @@ class Settings(BaseSettings):
     CORS_ORIGINS_STR: str = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
 
     # company details
-    COMPANY_NAME = "your_company_name"
-    COMPANY_ADDRESS = "your_company_address"
+    COMPANY_NAME: str = "your_company_name"
+    COMPANY_ADDRESS: str = "your_company_address"
     
     @computed_field
     @property

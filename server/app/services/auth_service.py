@@ -144,4 +144,28 @@ class AuthService:
                 "email": user.email
             }
         }
+    
+    async def update_profile(self, user_id: str, name: str) -> dict:
+        """Update user profile"""
+        user = await self.user_repository.get_by_id(user_id)
+        
+        if not user:
+            raise UnauthorizedError("User not found")
+        
+        if not user.is_active:
+            raise UnauthorizedError("User account is inactive")
+        
+        # Update user name
+        updated_user = await self.user_repository.update(user_id, {"name": name, "updated_at": datetime.utcnow()})
+        
+        if not updated_user:
+            raise NotFoundError("Failed to update user profile")
+        
+        return {
+            "user": {
+                "id": str(updated_user.id),
+                "name": updated_user.name,
+                "email": updated_user.email
+            }
+        }
 
