@@ -94,18 +94,20 @@ Ad Formats Needed: {', '.join(ad_formats)}
 
 Create professional ad copy and visual direction. Focus on the selected campaign idea.
 
+IMPORTANT for visual_direction: This will be used to generate a PURELY VISUAL image with NO TEXT. Describe only visual elements - objects, scenes, colors, mood, composition - that represent the product/service concept.
+
 Return ONLY a valid JSON object with:
 - "headline": A compelling headline (max 100 characters, catchy and attention-grabbing)
 - "body": The main body copy (max 300 characters, persuasive and engaging)
 - "call_to_action": A clear call-to-action (max 50 characters, action-oriented)
-- "visual_direction": Detailed description of the visual style, imagery, colors, mood, and composition for a poster/ad image (max 200 characters)
+- "visual_direction": Detailed description of ONLY visual elements for a concept-based image with ABSOLUTELY NO TEXT. Describe: specific visual objects/scenes, colors, mood, composition, and visual metaphors that represent the product/service concept. Examples: For food delivery: "Colorful food items arranged attractively, delivery bag with food containers, happy diverse people enjoying meals, restaurant/kitchen background, warm inviting colors, energetic positive mood". For fashion: "Stylish clothing items displayed elegantly, models in fashionable settings, accessories, vibrant colors, sophisticated mood". DO NOT mention any text, words, letters, numbers, or typography. (max 280 characters)
 
 Example format:
 {{
   "headline": "Walk the Walk, Change the World",
   "body": "Your every step can make a difference. Our new eco-friendly sneakers are crafted from 100% recycled materials, combining sustainable style with unparalleled comfort. Join the movement.",
   "call_to_action": "Shop Now",
-  "visual_direction": "Vibrant outdoor scene with diverse people walking in eco-friendly sneakers on a nature trail, bright green and earth tones, optimistic mood, dynamic composition"
+  "visual_direction": "Vibrant outdoor scene with diverse people walking in eco-friendly sneakers on a nature trail surrounded by lush green trees and clear blue sky, bright green and earth tones, optimistic mood, dynamic composition showing movement and nature connection, sneakers visible with eco-friendly design details"
 }}
 
 Return ONLY the JSON object, no additional text or markdown formatting."""
@@ -150,14 +152,32 @@ Return ONLY the JSON object, no additional text or markdown formatting."""
     ) -> Optional[str]:
         """Generate an image based on visual direction using Gemini 2.5 Flash Image model"""
         
-        # Create a detailed image generation prompt
-        image_prompt = f"""Create a professional advertising poster image for a campaign.
+        # Create a detailed image generation prompt - CONCEPT-BASED, NO TEXT
+        # Extract the core concept from campaign brief to represent it visually
+        image_prompt = f"""Create a professional, concept-based advertising image. This is a PURELY VISUAL image with ABSOLUTELY NO TEXT.
 
-Campaign Brief: {campaign_brief}
-Headline: {headline}
-Visual Direction: {visual_direction}
+Campaign Context: {campaign_brief}
+Visual Style Guide: {visual_direction}
 
-Generate a high-quality, professional advertising poster that visually represents this campaign. The image should be suitable for social media and print advertising, with vibrant colors, clear composition, and professional quality."""
+CRITICAL REQUIREMENTS:
+1. NO TEXT AT ALL: Do not include any words, letters, numbers, typography, text overlays, labels, or written content in the image
+2. CONCEPT-BASED: Extract the core product/service concept from the campaign brief and represent it through visual imagery only
+3. VISUAL REPRESENTATION: Use visual elements that clearly communicate the concept:
+   - For food delivery apps: Show food items, delivery bags/boxes, people enjoying meals, restaurant settings, delivery vehicles, happy customers with food
+   - For fashion brands: Show clothing items, models wearing clothes, fashion accessories, style settings
+   - For tech products: Show the product in use, modern environments, people using the product, technology scenes
+   - Use relevant visual metaphors and imagery that instantly communicate the product/service type
+
+4. VISUAL QUALITY:
+   - Professional photography or illustration style
+   - Vibrant, appealing colors that match the visual direction
+   - Clear composition that draws attention
+   - Suitable for social media and print advertising
+   - High quality and visually striking
+
+5. COMMUNICATION: The image must communicate the campaign concept purely through visual elements - no text needed to understand what the product/service is about
+
+Generate a high-quality, professional advertising image that represents the campaign concept using ONLY visual imagery - absolutely NO text, words, letters, numbers, or typography of any kind."""
 
         try:
             model_name = getattr(self.image_model, 'model_name', None) or getattr(self.image_model, '_model_name', None) or 'unknown'
@@ -350,6 +370,6 @@ Generate a high-quality, professional advertising poster that visually represent
             "headline": "Experience the Difference",
             "body": "Discover our innovative products designed to enhance your lifestyle. Quality meets style in every detail.",
             "call_to_action": "Learn More",
-            "visual_direction": "Modern, clean design with vibrant colors, professional photography, optimistic mood"
+            "visual_direction": "Modern, clean design with vibrant colors, professional photography showcasing product visuals, optimistic mood, concept-based imagery with relevant visual elements representing the product or service"
         }
 
