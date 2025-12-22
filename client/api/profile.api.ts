@@ -24,3 +24,4 @@ export const updateProfileApi = async (data: ProfileRequest): Promise<ProfileRes
   const response = await axiosInstance.put<ProfileResponse>('/auth/profile', data);
   return response.data;
 };
+

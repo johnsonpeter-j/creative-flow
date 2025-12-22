@@ -56,7 +56,11 @@ class Settings(BaseSettings):
     
     # Gemini AI
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API key (REQUIRED for campaign generation)")
-    
+
+    # company details
+    COMPANY_NAME: str = Field(default="your_company_name", description="Company name for email templates")
+    COMPANY_ADDRESS: str = Field(default="your_company_address", description="Company address for email templates")
+
     @computed_field
     @property
     def ALLOWED_EXTENSIONS(self) -> List[str]:

@@ -37,7 +37,7 @@ export default function OnboardingPage() {
   // Redirect on success
   useEffect(() => {
     if (success) {
-      router.push('/dashboard');
+      router.push('/camapign');
     }
   }, [success, router]);
 

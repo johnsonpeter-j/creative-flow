@@ -31,3 +31,4 @@ export const COLOR_ROLES = [
   { key: 'background', label: 'Background', description: 'Page background' },
   { key: 'text', label: 'Text', description: 'Main text color' },
 ] as const;
+
