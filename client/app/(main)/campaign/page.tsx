@@ -1,9 +1,96 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import CampaignHeader from "@/components/campaign/CampaignHeader";
+
 export default function CampaignPage() {
+  const router = useRouter();
+
+  const handleCreateCampaign = () => {
+    router.push('/campaign/create');
+  };
+
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Campaign content will go here */}
+    <main className="relative z-10 flex-1 flex flex-col">
+      {/* Header Section */}
+      <div className="w-full max-w-7xl mx-auto px-6 pt-8" style={{ height: '20vh' }}>
+        <CampaignHeader 
+          number="Ad"
+          title="Generator"
+          sectionTitle={'Elevate your ads. Amplify your brand.'}
+        />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="w-full max-w-7xl mx-auto px-6 flex-1 overflow-y-auto">
+        <div className="flex flex-col items-center justify-center h-full min-h-[60vh] py-12">
+          {/* Empty State */}
+          <div className="text-center max-w-md">
+            <div 
+              className="mx-auto mb-6 flex items-center justify-center rounded-full"
+              style={{
+                width: '120px',
+                height: '120px',
+                backgroundColor: 'rgba(198, 124, 78, 0.1)',
+              }}
+            >
+              <svg 
+                width="60" 
+                height="60" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+                style={{ color: 'var(--color-frame)' }}
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="12" y1="8" x2="12" y2="16" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+            </div>
+            
+            <h2 
+              className="text-2xl font-semibold mb-3"
+              style={{ color: 'rgba(49, 49, 49, 0.95)' }}
+            >
+              No campaigns yet
+            </h2>
+            
+            <p 
+              className="text-base mb-8"
+              style={{ color: 'rgba(49, 49, 49, 0.6)' }}
+            >
+              Get started by creating your first ad campaign. Our AI-powered generator will help you create compelling ads that resonate with your audience.
+            </p>
+            
+            {/* Create Campaign Button */}
+            <button
+              onClick={handleCreateCampaign}
+              className="rounded-lg relative overflow-hidden transition-all duration-300 flex items-center justify-center gap-2 mx-auto"
+              style={{
+                padding: '16px 32px',
+                fontSize: 'clamp(14px, 1.2vw + 0.5rem, 16px)',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontWeight: 500,
+                backgroundColor: 'var(--color-frame)',
+                color: 'rgba(237, 237, 237, 0.95)',
+                boxShadow: '0 4px 16px rgba(198, 124, 78, 0.25)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(198, 124, 78, 0.35)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(198, 124, 78, 0.25)';
+              }}
+            >
+              Create Your First Campaign
+              <span style={{ fontSize: '18px', fontWeight: 300 }}>+</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

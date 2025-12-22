@@ -65,32 +65,51 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (onboardingData) {
-      setBusinessName(onboardingData.brandName || '');
+      
+      // Handle both camelCase and snake_case for backward compatibility
+      setBusinessName(onboardingData.brandName || (onboardingData as any).brand_name || '');
       setIndustry(onboardingData.industry || '');
-      setLogoPreview(onboardingData.logoUrl || null);
-      setAddressLine1(onboardingData.addressLine1 || '');
-      setAddressLine2(onboardingData.addressLine2 || '');
+
+      if(onboardingData.logoUrl){
+        if(onboardingData.logoUrl?.startsWith("/uploads")){
+          setLogoPreview(`${process.env.NEXT_PUBLIC_IMAGE_PREFIX_PATH}${onboardingData.logoUrl}`)
+        }else{
+          setLogoPreview(onboardingData.logoUrl)
+        }
+      }else if((onboardingData as any)?.logo_url){
+        if((onboardingData as any)?.logo_url?.startsWith("/uploads")){
+          setLogoPreview(`${process.env.NEXT_PUBLIC_IMAGE_PREFIX_PATH}${(onboardingData as any)?.logo_url}`)
+        }else{
+          setLogoPreview((onboardingData as any)?.logo_url)
+        }
+      }else{
+        setLogoPreview(null)
+      }
+      setAddressLine1(onboardingData.addressLine1 || (onboardingData as any).address_line1 || '');
+      setAddressLine2(onboardingData.addressLine2 || (onboardingData as any).address_line2 || '');
       setCity(onboardingData.city || '');
       setZip(onboardingData.zip || '');
-      setBusinessAddressType(onboardingData.businessAddressType || '');
-      setBusinessType(onboardingData.businessType || '');
-      setLogoPosition(onboardingData.logoPosition || 'Top Left');
+      setBusinessAddressType(onboardingData.businessAddressType || (onboardingData as any).business_address_type || '');
+      setBusinessType(onboardingData.businessType || (onboardingData as any).business_type || '');
+      setLogoPosition(onboardingData.logoPosition || (onboardingData as any).logo_position || 'Top Left');
       
       // Set font type and value
-      if (onboardingData.fontType) {
-        setFontType(onboardingData.fontType as 'dropdown' | 'google' | 'upload');
+      const fontType = onboardingData.fontType || (onboardingData as any).font_type;
+      if (fontType) {
+        setFontType(fontType as 'dropdown' | 'google' | 'upload');
       }
       if (onboardingData.typography) {
         setFontValue(onboardingData.typography);
       }
       
       // Set colors from color palette
-      if (onboardingData.colorPalette && onboardingData.colorPalette.length >= 4) {
+      const colorPalette = onboardingData.colorPalette || (onboardingData as any).color_palette;
+      if (colorPalette && Array.isArray(colorPalette) && colorPalette.length >= 4) {
         setColors({
-          primary: onboardingData.colorPalette[0] || '#6366f1',
-          secondary: onboardingData.colorPalette[1] || '#8b5cf6',
-          background: onboardingData.colorPalette[2] || '#ffffff',
-          text: onboardingData.colorPalette[3] || '#313131',
+          primary: colorPalette[0] || '#6366f1',
+          secondary: colorPalette[1] || '#8b5cf6',
+          background: colorPalette[2] || '#ffffff',
+          text: colorPalette[3] || '#313131',
         });
       }
     }

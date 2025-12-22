@@ -74,8 +74,8 @@ export default function SlidingAuthForm({ initialActive = false }: SlidingAuthFo
     setIsLoginLoading(true);
     try {
       await loginApi({ email: loginEmail, password: loginPassword } as LoginRequest);
-      router.push('/');
-      window.location.reload();
+      router.push('/campaign');
+      // window.location.reload();
     } catch (error) {
       console.error('Login failed:', error);
     } finally {

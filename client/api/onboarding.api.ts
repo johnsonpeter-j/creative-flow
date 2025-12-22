@@ -81,11 +81,33 @@ export const onboardingApi = async (data: OnboardingRequest): Promise<Onboarding
       formData.append('font_file', data.fontFile);
     }
 
-    const response = await axiosInstance.post<OnboardingResponse>('/onboarding', formData, {
+    const response = await axiosInstance.post<any>('/onboarding', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    
+    // Transform snake_case to camelCase if data exists
+    if (response.data?.data) {
+      const data = response.data.data;
+      response.data.data = {
+        id: data.id,
+        brandName: data.brand_name || data.brandName,
+        industry: data.industry,
+        logoUrl: data.logo_url || data.logoUrl,
+        logoPosition: data.logo_position || data.logoPosition,
+        typography: data.typography,
+        fontType: data.font_type || data.fontType,
+        fontFileUrl: data.font_file_url || data.fontFileUrl,
+        colorPalette: data.color_palette || data.colorPalette || [],
+        addressLine1: data.address_line1 || data.addressLine1,
+        addressLine2: data.address_line2 || data.addressLine2,
+        city: data.city,
+        zip: data.zip,
+        businessAddressType: data.business_address_type || data.businessAddressType,
+        businessType: data.business_type || data.businessType,
+      };
+    }
     
     showSuccessToast('Brand setup completed successfully!');
     return response.data;
@@ -99,7 +121,30 @@ export const onboardingApi = async (data: OnboardingRequest): Promise<Onboarding
 // Get onboarding data API
 export const getOnboardingApi = async (): Promise<OnboardingResponse> => {
   try {
-    const response = await axiosInstance.get<OnboardingResponse>('/onboarding');
+    const response = await axiosInstance.get<any>('/onboarding');
+    
+    // Transform snake_case to camelCase if data exists
+    if (response.data?.data) {
+      const data = response.data.data;
+      response.data.data = {
+        id: data.id,
+        brandName: data.brand_name || data.brandName,
+        industry: data.industry,
+        logoUrl: data.logo_url || data.logoUrl,
+        logoPosition: data.logo_position || data.logoPosition,
+        typography: data.typography,
+        fontType: data.font_type || data.fontType,
+        fontFileUrl: data.font_file_url || data.fontFileUrl,
+        colorPalette: data.color_palette || data.colorPalette || [],
+        addressLine1: data.address_line1 || data.addressLine1,
+        addressLine2: data.address_line2 || data.addressLine2,
+        city: data.city,
+        zip: data.zip,
+        businessAddressType: data.business_address_type || data.businessAddressType,
+        businessType: data.business_type || data.businessType,
+      };
+    }
+    
     return response.data;
   } catch (error: any) {
     const errorMessage = error.response?.data?.message || 'Failed to load brand information.';
@@ -107,5 +152,6 @@ export const getOnboardingApi = async (): Promise<OnboardingResponse> => {
     throw error;
   }
 };
+
 
 

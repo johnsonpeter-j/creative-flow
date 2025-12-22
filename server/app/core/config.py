@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     DEBUG: bool = Field(default=False, description="Debug mode")
 
     # url 
-    SERVER_URL:str = "http://localhost:8000"
+    NEXT_PUBLIC_API_URL:str = "http://localhost:8000"
     CLIENT_URL:str = "http://localhost:3000"
     
     # API

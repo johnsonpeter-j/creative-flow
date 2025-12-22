@@ -56,7 +56,7 @@ export default function MainLayout({
       <Sidebar />
 
       {/* Main Content - comes after sidebar */}
-      <div className="relative z-10 flex-1 flex flex-col" style={{ paddingLeft: '100px' }}>
+      <div className="relative z-10 flex-1 flex flex-col overflow-y-auto" style={{ paddingLeft: '100px' }}>
         {children}
       </div>
     </div>
