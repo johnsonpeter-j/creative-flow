@@ -10,12 +10,12 @@ const AdPreview: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto h-full flex flex-col justify-center">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Ad Is Ready!</h2>
+    <div className="w-full max-w-4xl mx-auto h-full flex flex-col py-8">
+      <div className="text-center mb-8">
+        {/* <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Ad Is Ready!</h2> */}
         <p className="text-gray-500">Here&apos;s a preview of your final ad. You can now download it.</p>
       </div>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center flex-1">
         {/* Ad Preview */}
         <div className="w-full max-w-md bg-gray-800 shadow-lg rounded-2xl p-6 aspect-w-1 aspect-h-1 flex items-center justify-center">
           <div className="relative w-full h-full bg-gray-400 rounded-lg flex items-end justify-start p-4">

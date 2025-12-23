@@ -14,12 +14,12 @@ export default function CampaignPage() {
     <main className="relative z-10 flex-1 flex flex-col">
       {/* Header Section */}
       <div className="w-full max-w-7xl mx-auto px-6 pt-8" style={{ height: '20vh' }}>
-        <CampaignHeader 
-          number="Ad"
-          title="Generator"
-          sectionTitle={'Elevate your ads. Amplify your brand.'}
-        />
-      </div>
+            <CampaignHeader 
+              number="Ad"
+              title="Generator"
+              sectionTitle={'Elevate your ads. Amplify your brand.'}
+            />
+        </div>
 
       {/* Main Content Area */}
       <div className="w-full max-w-7xl mx-auto px-6 flex-1 overflow-y-auto">
@@ -47,8 +47,8 @@ export default function CampaignPage() {
                 <line x1="12" y1="8" x2="12" y2="16" />
                 <line x1="8" y1="12" x2="16" y2="12" />
               </svg>
-            </div>
-            
+        </div>
+
             <h2 
               className="text-2xl font-semibold mb-3"
               style={{ color: 'rgba(49, 49, 49, 0.95)' }}
@@ -90,7 +90,7 @@ export default function CampaignPage() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
     </main>
   );
 }
