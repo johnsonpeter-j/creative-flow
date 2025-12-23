@@ -146,6 +146,27 @@ async def get_campaign(
             image_url=campaign.ad_copy.image_url
         )
     
+    # Convert CampaignIdeaModel to CampaignIdeaSchema
+    all_ideas_schema = [
+        CampaignIdeaSchema(
+            title=idea.title,
+            description=idea.description,
+            score=idea.score,
+            reasoning=idea.reasoning
+        )
+        for idea in campaign.all_ideas
+    ]
+    
+    top_ideas_schema = [
+        CampaignIdeaSchema(
+            title=idea.title,
+            description=idea.description,
+            score=idea.score,
+            reasoning=idea.reasoning
+        )
+        for idea in campaign.top_ideas
+    ]
+    
     return CampaignResponse(
         id=campaign.id,
         user_id=campaign.user_id,
@@ -153,8 +174,8 @@ async def get_campaign(
         objective=campaign.objective,
         target_audience=campaign.target_audience,
         ad_formats=campaign.ad_formats,
-        all_ideas=campaign.all_ideas,
-        top_ideas=campaign.top_ideas,
+        all_ideas=all_ideas_schema,
+        top_ideas=top_ideas_schema,
         selected_idea_index=campaign.selected_idea_index,
         ad_copy=ad_copy_schema,
         status=campaign.status,
@@ -183,6 +204,27 @@ async def get_user_campaigns(
                 image_url=campaign.ad_copy.image_url
             )
         
+        # Convert CampaignIdeaModel to CampaignIdeaSchema
+        all_ideas_schema = [
+            CampaignIdeaSchema(
+                title=idea.title,
+                description=idea.description,
+                score=idea.score,
+                reasoning=idea.reasoning
+            )
+            for idea in campaign.all_ideas
+        ]
+        
+        top_ideas_schema = [
+            CampaignIdeaSchema(
+                title=idea.title,
+                description=idea.description,
+                score=idea.score,
+                reasoning=idea.reasoning
+            )
+            for idea in campaign.top_ideas
+        ]
+        
         result.append(CampaignResponse(
             id=campaign.id,
             user_id=campaign.user_id,
@@ -190,8 +232,8 @@ async def get_user_campaigns(
             objective=campaign.objective,
             target_audience=campaign.target_audience,
             ad_formats=campaign.ad_formats,
-            all_ideas=campaign.all_ideas,
-            top_ideas=campaign.top_ideas,
+            all_ideas=all_ideas_schema,
+            top_ideas=top_ideas_schema,
             selected_idea_index=campaign.selected_idea_index,
             ad_copy=ad_copy_schema,
             status=campaign.status,
