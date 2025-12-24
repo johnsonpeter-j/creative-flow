@@ -169,8 +169,8 @@ export default function AddCampaignPage() {
             />
         </div>
 
-        <div className="w-full max-w-7xl mx-auto px-6 overflow-y-auto" style={{ height: '60vh' }}>
-          <div className="flex flex-col items-center justify-center h-full">{renderStep()}</div>
+        <div className="w-full max-w-7xl mx-auto px-6" style={{ height: '60vh', overflow: 'hidden' }}>
+          <div className="flex flex-col items-center justify-start h-full py-4">{renderStep()}</div>
         </div>
 
         <div className="w-full max-w-7xl mx-auto px-6 flex justify-end items-center" style={{ height: '20vh' }}>

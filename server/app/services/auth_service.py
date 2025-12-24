@@ -90,8 +90,8 @@ class AuthService:
         )
         
         # Build reset password URL
-        client_url = os.getenv("CLIENT_URL", "http://localhost:3000")
-        reset_link = f"{client_url}/reset-password/{reset_token}"
+        from app.core.config import settings
+        reset_link = f"{settings.CLIENT_URL}/reset-password/{reset_token}"
         
         # Prepare email message data
         message_data = [
@@ -168,4 +168,5 @@ class AuthService:
                 "email": updated_user.email
             }
         }
+
 

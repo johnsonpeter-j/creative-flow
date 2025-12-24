@@ -19,12 +19,17 @@ export default function EditorPage() {
         </div>
         
         <div className="flex justify-center">
-            {/* 
-                In a real scenario, the initialImage would come from the generated ad selection.
-                For now, we'll placeholder it or let the user upload/start blank.
-                Adding a placeholder URL for demo.
-            */}
-          <Editor initialImage="https://via.placeholder.com/800x600?text=Ad+Background+Image" />
+          <Editor 
+            initialImage="/test.png"
+            initialText={{
+              text: "Transform Your Business Today",
+              left: 150,
+              top: 200,
+              fontSize: 48,
+              fill: "#ffffff",
+              fontFamily: "Inter"
+            }}
+          />
         </div>
       </div>
     </div>

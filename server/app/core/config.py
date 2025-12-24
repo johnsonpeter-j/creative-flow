@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional, List
 from pydantic import computed_field
 import json
@@ -11,12 +11,16 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 
-    # url 
-    SERVER_URL:str = "http://localhost:8000"
-    CLIENT_URL:str = "http://localhost:3000"
+    # URLs - Should be set in .env file for production
+    # These defaults are for local development only
+    SERVER_URL: str = "http://localhost:8000"
+    CLIENT_URL: str = "http://localhost:3000"
     
     # API
     API_V1_PREFIX: str = "/api"
+    
+    # Gemini AI
+    GEMINI_API_KEY: str = "your-gemini-api-key"
     
     # MongoDB
     MONGODB_URL: str = "mongodb://localhost:27017"
@@ -41,8 +45,8 @@ class Settings(BaseSettings):
     CORS_ORIGINS_STR: str = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
 
     # company details
-    COMPANY_NAME = "your_company_name"
-    COMPANY_ADDRESS = "your_company_address"
+    COMPANY_NAME: str = "your_company_name"
+    COMPANY_ADDRESS: str = "your_company_address"
     
     @computed_field
     @property
@@ -84,10 +88,12 @@ class Settings(BaseSettings):
             "http://127.0.0.1:3000",
         ]
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
-        extra = "ignore"  # Ignore extra fields from .env that don't match model fields
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore"  # Ignore extra fields from .env that don't match model fields
+    )
 
 
 settings = Settings()

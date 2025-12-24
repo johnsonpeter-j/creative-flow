@@ -5,46 +5,45 @@ import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 import { getOnboardingApi } from '@/api/onboarding.api';
 import SlidingAuthForm from '@/components/auth/SlidingAuthForm';
-import Sidebar from '@/components/campaign/Sidebar';
 import { Loading } from '@/components/ui/Loading';
 
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [loading, setLoading] = useState(true);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
 
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
+    const checkAuthAndRedirect = async () => {
       if (!isAuthenticated) {
         setLoading(false);
         return;
       }
 
+      // If authenticated, check onboarding status and redirect
       try {
         const response = await getOnboardingApi();
         if (!response.data) {
+          // Not onboarded, redirect to onboarding
           router.push('/onboarding');
         } else {
-          setOnboardingComplete(true);
-          setLoading(false);
+          // Onboarded, redirect to campaign
+          router.push('/campaign');
         }
       } catch (error) {
+        // On error, try onboarding first
         router.push('/onboarding');
       }
     };
 
-    checkOnboardingStatus();
+    checkAuthAndRedirect();
   }, [isAuthenticated, router]);
 
-  const handleCreateCampaign = () => {
-    router.push('/campaign/create');
-  };
-
-  if (loading) {
+  // Show loading while checking auth
+  if (loading && isAuthenticated) {
     return <Loading />;
   }
 
+  // Show auth form for non-authenticated users
   if (!isAuthenticated) {
     return (
       <div 
@@ -99,24 +98,6 @@ export default function HomePage() {
     );
   }
 
-  if (onboardingComplete) {
-    return (
-      <div className="flex min-h-screen bg-gray-50">
-        <Sidebar />
-        <main className="flex-1 flex items-center justify-center p-8 ml-20">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-800 mb-8">Create New Campaign</h1>
-            <button
-              onClick={handleCreateCampaign}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out"
-            >
-              Start
-            </button>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
+  // This should not be reached, but show loading just in case
   return <Loading />;
 }
