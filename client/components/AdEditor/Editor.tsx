@@ -30,15 +30,24 @@ interface EditorProps {
     fill?: string;
     fontFamily?: string;
   };
+  initialTexts?: Array<{
+    text: string;
+    left?: number;
+    top?: number;
+    fontSize?: number;
+    fill?: string;
+    fontFamily?: string;
+  }>;
 }
 
-const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
+const Editor: React.FC<EditorProps> = ({ initialImage, initialText, initialTexts }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [selectedObject, setSelectedObject] = useState<fabric.Object | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const originalImageSizeRef = useRef<{ width: number; height: number } | null>(null);
 
   const FONT_FAMILIES = [
     'Inter',
@@ -56,11 +65,30 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    const calculateCanvasSize = () => {
+      const container = canvasRef.current?.parentElement;
+      if (!container) return { width: 800, height: 700 };
+      
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const padding = 32;
+      
+      // Use most of the container space, with reasonable max sizes
+      const maxWidth = Math.min(containerWidth - padding, 1400);
+      const maxHeight = Math.max(containerHeight - padding, 600);
+      
+      return { width: maxWidth, height: maxHeight };
+    };
+
+    const { width, height } = calculateCanvasSize();
     const fabricCanvas = new fabric.Canvas(canvasRef.current, {
-      width: 800,
-      height: 700,
+      width: width,
+      height: height,
       backgroundColor: '#f3f4f6',
     });
+    
+    // Store calculateCanvasSize for resize handler
+    const canvasSizeCalculator = calculateCanvasSize;
 
     // Handle object selection
     fabricCanvas.on('selection:created', (e) => {
@@ -102,7 +130,63 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
     setCanvas(fabricCanvas);
     saveState();
 
+    // Handle window resize - dynamically resize image if it exists
+    const handleResize = () => {
+      if (!canvasRef.current || !fabricCanvas) return;
+      
+      // If there's an image with stored original dimensions, recalculate
+      if (originalImageSizeRef.current && initialImage) {
+        const { width: imgWidth, height: imgHeight } = originalImageSizeRef.current;
+        const container = canvasRef.current?.parentElement?.parentElement;
+        
+        if (container && originalImageSizeRef.current) {
+          const { width: imgWidth, height: imgHeight } = originalImageSizeRef.current;
+          
+          // Get actual toolbar height dynamically
+          const toolbar = container.querySelector('.bg-gray-50');
+          const toolbarHeight = toolbar ? (toolbar as HTMLElement).offsetHeight + 2 : 50;
+          const gap = 2;
+          
+          const containerWidth = container.clientWidth || container.offsetWidth;
+          const containerHeight = container.clientHeight || container.offsetHeight;
+          
+          const availableWidth = containerWidth;
+          const availableHeight = containerHeight - toolbarHeight - gap;
+          
+          // Calculate scale to fit FULL image (handles both vertical and horizontal)
+          const scaleX = availableWidth / imgWidth;
+          const scaleY = availableHeight / imgHeight;
+          const scale = Math.min(scaleX, scaleY); // Ensures full image fits
+          
+          // Canvas size = scaled image size (full image visible)
+          const canvasWidth = Math.floor(imgWidth * scale);
+          const canvasHeight = Math.floor(imgHeight * scale);
+          
+          fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight });
+          
+          // Update image scale to show full image
+          const objects = fabricCanvas.getObjects();
+          const backgroundImage = objects.find(obj => obj.type === 'image' && !obj.selectable);
+          if (backgroundImage) {
+            (backgroundImage as fabric.Image).set({
+              scaleX: scale,
+              scaleY: scale,
+            });
+          }
+        }
+      } else {
+        // No image, use default calculation
+        const { width, height } = calculateCanvasSize();
+        fabricCanvas.setDimensions({ width, height });
+      }
+      
+      fabricCanvas.renderAll();
+    };
+
+    window.addEventListener('resize', handleResize);
+
     return () => {
+      window.removeEventListener('resize', handleResize);
       fabricCanvas.dispose();
     };
   }, []);
@@ -138,50 +222,130 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
   };
 
   useEffect(() => {
+    const addTextLayers = (texts: Array<{
+      text: string;
+      left?: number;
+      top?: number;
+      fontSize?: number;
+      fill?: string;
+      fontFamily?: string;
+    }>) => {
+      if (!canvas) return;
+      
+      texts.forEach((textConfig, index) => {
+        setTimeout(() => {
+          const text = new fabric.Textbox(textConfig.text, {
+            left: textConfig.left || 100,
+            top: textConfig.top || (100 + index * 120),
+            fontSize: textConfig.fontSize || 32,
+            fill: textConfig.fill || '#000000',
+            fontFamily: textConfig.fontFamily || 'Inter',
+            editable: true,
+            width: 600,
+            splitByGrapheme: true,
+            dynamicMinWidth: 100,
+          });
+          canvas.add(text);
+          if (index === texts.length - 1) {
+            canvas.setActiveObject(text);
+          }
+          canvas.renderAll();
+        }, 150 * (index + 1));
+      });
+      
+      setTimeout(() => saveState(), 150 * texts.length + 100);
+    };
+
     if (canvas && initialImage) {
       fabric.Image.fromURL(initialImage, (img) => {
-        const scale = canvas.width! / img.width!;
-        img.scale(scale);
-        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+        const imgWidth = img.width!;
+        const imgHeight = img.height!;
         
-        if (initialText) {
-          setTimeout(() => {
-            const text = new fabric.Textbox(initialText.text, {
-              left: initialText.left || 100,
-              top: initialText.top || 100,
-              fontSize: initialText.fontSize || 32,
-              fill: initialText.fill || '#000000',
-              fontFamily: initialText.fontFamily || 'Inter',
-              editable: true,
-              width: 600,
-              splitByGrapheme: true,
-              dynamicMinWidth: 100,
-            });
-            canvas.add(text);
-            canvas.setActiveObject(text);
-            canvas.renderAll();
-            saveState();
-          }, 100);
-        }
+        // Wait a bit for DOM to be fully rendered
+        setTimeout(() => {
+          // Get the Editor root container
+          const container = canvasRef.current?.parentElement?.parentElement;
+          if (!container) return;
+          
+          // Get toolbar height
+          const toolbar = container.querySelector('.bg-gray-50');
+          const toolbarHeight = toolbar ? (toolbar as HTMLElement).offsetHeight + 4 : 50;
+          const gap = 4;
+          
+          // Use viewport dimensions directly for maximum size
+          // The page uses 60vh for content area
+          const viewportHeight = window.innerHeight;
+          const viewportWidth = window.innerWidth;
+          
+          // Calculate available space from viewport (60vh content area)
+          const contentAreaHeight = viewportHeight * 0.6; // 60vh
+          const contentAreaWidth = Math.min(viewportWidth - 100, 1600); // Full width minus margins
+          
+          // Also check actual container dimensions
+          const containerWidth = container.clientWidth || container.offsetWidth || contentAreaWidth;
+          const containerHeight = container.clientHeight || container.offsetHeight || contentAreaHeight;
+          
+          // Use the larger dimensions for maximum size
+          const availableWidth = Math.max(containerWidth, contentAreaWidth) - 20; // Small margin
+          const availableHeight = Math.max(containerHeight, contentAreaHeight) - toolbarHeight - gap;
+          
+          // Calculate scale to fit FULL image - maximize size
+          const scaleX = availableWidth / imgWidth;
+          const scaleY = availableHeight / imgHeight;
+          
+          // Use Math.min to ensure FULL image fits (no cropping)
+          // This works for both portrait and landscape images
+          const scale = Math.min(scaleX, scaleY);
+          
+          // Calculate canvas size to show full image at maximum size
+          const canvasWidth = Math.floor(imgWidth * scale);
+          const canvasHeight = Math.floor(imgHeight * scale);
+        
+          // Set canvas to fit the full image (maintains aspect ratio)
+          canvas.setDimensions({
+            width: canvasWidth,
+            height: canvasHeight,
+          });
+          
+          // Scale image to match canvas exactly
+          // Image width = canvas width, Image height = canvas height
+          // This ensures full image is visible for both vertical and horizontal images
+          img.set({
+            left: 0,
+            top: 0,
+            scaleX: scale,
+            scaleY: scale,
+            selectable: false,
+            evented: false,
+            lockMovementX: true,
+            lockMovementY: true,
+            lockRotation: true,
+            lockScalingX: true,
+            lockScalingY: true,
+          });
+          
+          // Add image to canvas and send to back
+          canvas.add(img);
+          canvas.sendToBack(img);
+          canvas.renderAll();
+          
+          // Use initialTexts if provided, otherwise use initialText
+          if (initialTexts && initialTexts.length > 0) {
+            setTimeout(() => addTextLayers(initialTexts), 200);
+          } else if (initialText) {
+            setTimeout(() => addTextLayers([initialText]), 200);
+          }
+        }, 100); // Small delay to ensure DOM is ready
       }, { crossOrigin: 'anonymous' });
-    } else if (canvas && initialText) {
-      const text = new fabric.Textbox(initialText.text, {
-        left: initialText.left || 100,
-        top: initialText.top || 100,
-        fontSize: initialText.fontSize || 32,
-        fill: initialText.fill || '#000000',
-        fontFamily: initialText.fontFamily || 'Inter',
-        editable: true,
-        width: 600,
-        splitByGrapheme: true,
-        dynamicMinWidth: 100,
-      });
-      canvas.add(text);
-      canvas.setActiveObject(text);
-      canvas.renderAll();
-      saveState();
+    } else if (canvas) {
+      // No image, just add text layers
+      if (initialTexts && initialTexts.length > 0) {
+        addTextLayers(initialTexts);
+      } else if (initialText) {
+        addTextLayers([initialText]);
+      }
     }
-  }, [canvas, initialImage, initialText]);
+  }, [canvas, initialImage, initialText, initialTexts]);
 
   const addText = () => {
     if (!canvas) return;
@@ -202,7 +366,7 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
     saveState();
   };
 
-  const updateTextProperty = (property: string, value: any) => {
+  const updateTextProperty = (property: keyof fabric.Textbox, value: any) => {
     if (!canvas || !selectedObject) return;
     const activeObject = canvas.getActiveObject() as fabric.Textbox;
     if (activeObject && activeObject.type === 'textbox') {
@@ -368,42 +532,46 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
   const activeText = isTextSelected ? selectedObject as fabric.Textbox : null;
 
   return (
-    <div className="flex flex-col items-center gap-4 p-6 bg-white rounded-xl shadow-lg max-w-6xl mx-auto">
+    <div className="flex flex-col items-center gap-1 p-0 bg-white rounded-xl shadow-lg w-full h-full max-w-full">
       {/* Main Toolbar */}
-      <div className="w-full flex flex-wrap gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="w-full flex flex-wrap gap-1.5 p-2 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
         {/* Add Elements */}
-        <div className="flex gap-2 border-r border-gray-300 pr-3">
+        <div className="flex gap-1.5 border-r border-gray-300 pr-2">
           <button
             onClick={addText}
-            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+            className="p-2 text-white rounded-lg transition flex items-center justify-center"
+            style={{
+              backgroundColor: 'var(--color-frame)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '1';
+            }}
             title="Add Text"
           >
             <Type className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Text</span>
           </button>
-          <button
-            onClick={uploadImage}
-            className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
-            title="Upload Image"
-          >
-            <Upload className="w-4 h-4" />
-            <span className="hidden sm:inline">Upload</span>
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
         </div>
 
         {/* Undo/Redo */}
-        <div className="flex gap-2 border-r border-gray-300 pr-3">
+        <div className="flex gap-1.5 border-r border-gray-300 pr-2">
           <button
             onClick={undo}
             disabled={historyIndex <= 0}
-            className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            style={{
+              backgroundColor: 'var(--color-frame)',
+            }}
+            onMouseEnter={(e) => {
+              if (historyIndex > 0) {
+                e.currentTarget.style.opacity = '0.9';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = historyIndex <= 0 ? '0.5' : '1';
+            }}
             title="Undo"
           >
             <Undo className="w-4 h-4" />
@@ -411,7 +579,18 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
           <button
             onClick={redo}
             disabled={historyIndex >= history.length - 1}
-            className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            style={{
+              backgroundColor: 'var(--color-frame)',
+            }}
+            onMouseEnter={(e) => {
+              if (historyIndex < history.length - 1) {
+                e.currentTarget.style.opacity = '0.9';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = historyIndex >= history.length - 1 ? '0.5' : '1';
+            }}
             title="Redo"
           >
             <Redo className="w-4 h-4" />
@@ -422,23 +601,23 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
         {isTextSelected && (
           <>
             {/* Font Size */}
-            <div className="flex gap-1 items-center border-r border-gray-300 pr-3">
+            <div className="flex gap-1 items-center border-r border-gray-300 pr-2">
               <button
                 onClick={decreaseFontSize}
-                className="px-2 py-2 bg-gray-200 hover:bg-gray-300 rounded transition"
+                className="p-1.5 bg-gray-200 hover:bg-gray-300 rounded transition"
                 title="Decrease Font Size"
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-3.5 h-3.5" />
               </button>
-              <span className="px-2 text-sm font-medium min-w-[3rem] text-center">
+              <span className="px-1.5 text-xs font-medium min-w-[2.5rem] text-center">
                 {activeText?.fontSize || 32}px
               </span>
               <button
                 onClick={increaseFontSize}
-                className="px-2 py-2 bg-gray-200 hover:bg-gray-300 rounded transition"
+                className="p-1.5 bg-gray-200 hover:bg-gray-300 rounded transition"
                 title="Increase Font Size"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -446,7 +625,7 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
             <select
               value={activeText?.fontFamily || 'Inter'}
               onChange={(e) => updateTextProperty('fontFamily', e.target.value)}
-              className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-2 py-1.5 bg-white border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {FONT_FAMILIES.map((font) => (
                 <option key={font} value={font}>
@@ -456,25 +635,27 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
             </select>
 
             {/* Text Style */}
-            <div className="flex gap-1 border-r border-gray-300 pr-3">
+            <div className="flex gap-1 border-r border-gray-300 pr-2">
               <button
                 onClick={toggleBold}
-                className={`px-3 py-2 rounded transition ${
+                className={`p-2 rounded transition ${
                   activeText?.fontWeight === 'bold'
-                    ? 'bg-blue-600 text-white'
+                    ? 'text-white'
                     : 'bg-gray-200 hover:bg-gray-300'
                 }`}
+                style={activeText?.fontWeight === 'bold' ? { backgroundColor: 'var(--color-frame)' } : {}}
                 title="Bold"
               >
                 <Bold className="w-4 h-4" />
               </button>
               <button
                 onClick={toggleItalic}
-                className={`px-3 py-2 rounded transition ${
+                className={`p-2 rounded transition ${
                   activeText?.fontStyle === 'italic'
-                    ? 'bg-blue-600 text-white'
+                    ? 'text-white'
                     : 'bg-gray-200 hover:bg-gray-300'
                 }`}
+                style={activeText?.fontStyle === 'italic' ? { backgroundColor: 'var(--color-frame)' } : {}}
                 title="Italic"
               >
                 <Italic className="w-4 h-4" />
@@ -482,36 +663,39 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
             </div>
 
             {/* Text Alignment */}
-            <div className="flex gap-1 border-r border-gray-300 pr-3">
+            <div className="flex gap-1 border-r border-gray-300 pr-2">
               <button
                 onClick={() => setTextAlign('left')}
-                className={`px-3 py-2 rounded transition ${
+                className={`p-2 rounded transition ${
                   activeText?.textAlign === 'left'
-                    ? 'bg-blue-600 text-white'
+                    ? 'text-white'
                     : 'bg-gray-200 hover:bg-gray-300'
                 }`}
+                style={activeText?.textAlign === 'left' ? { backgroundColor: 'var(--color-frame)' } : {}}
                 title="Align Left"
               >
                 <AlignLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setTextAlign('center')}
-                className={`px-3 py-2 rounded transition ${
+                className={`p-2 rounded transition ${
                   activeText?.textAlign === 'center'
-                    ? 'bg-blue-600 text-white'
+                    ? 'text-white'
                     : 'bg-gray-200 hover:bg-gray-300'
                 }`}
+                style={activeText?.textAlign === 'center' ? { backgroundColor: 'var(--color-frame)' } : {}}
                 title="Align Center"
               >
                 <AlignCenter className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setTextAlign('right')}
-                className={`px-3 py-2 rounded transition ${
+                className={`p-2 rounded transition ${
                   activeText?.textAlign === 'right'
-                    ? 'bg-blue-600 text-white'
+                    ? 'text-white'
                     : 'bg-gray-200 hover:bg-gray-300'
                 }`}
+                style={activeText?.textAlign === 'right' ? { backgroundColor: 'var(--color-frame)' } : {}}
                 title="Align Right"
               >
                 <AlignRight className="w-4 h-4" />
@@ -519,13 +703,13 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
             </div>
 
             {/* Text Color */}
-            <div className="flex items-center gap-2 border-r border-gray-300 pr-3">
-              <Palette className="w-4 h-4 text-gray-600" />
+            <div className="flex items-center gap-1.5 border-r border-gray-300 pr-2">
+              <Palette className="w-3.5 h-3.5 text-gray-600" />
               <input
                 type="color"
                 value={activeText?.fill as string || '#000000'}
                 onChange={(e) => updateTextProperty('fill', e.target.value)}
-                className="w-10 h-8 rounded border border-gray-300 cursor-pointer"
+                className="w-8 h-7 rounded border border-gray-300 cursor-pointer"
                 title="Text Color"
               />
             </div>
@@ -534,14 +718,22 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
 
         {/* Image Controls - Only show when image is selected */}
         {isImageSelected && (
-          <div className="flex gap-2 border-r border-gray-300 pr-3">
+          <div className="flex gap-1.5 border-r border-gray-300 pr-2">
             <button
               onClick={cropImage}
-              className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+              className="p-2 text-white rounded-lg transition flex items-center justify-center"
+              style={{
+                backgroundColor: 'var(--color-frame)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
               title="Crop Image"
             >
               <Crop className="w-4 h-4" />
-              <span className="hidden sm:inline">Crop</span>
             </button>
           </div>
         )}
@@ -550,38 +742,46 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText }) => {
         {selectedObject && (
           <button
             onClick={deleteSelected}
-            className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
+            className="p-2 text-white rounded-lg transition flex items-center justify-center"
+            style={{
+              backgroundColor: 'var(--color-frame)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '1';
+            }}
             title="Delete Selected"
           >
             <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Delete</span>
           </button>
         )}
 
         {/* Download */}
         <button
           onClick={downloadImage}
-          className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 ml-auto"
+          className="p-2 text-white rounded-lg transition flex items-center justify-center ml-auto"
+          style={{
+            backgroundColor: 'var(--color-frame)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '0.9';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '1';
+          }}
           title="Download"
         >
           <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Download</span>
         </button>
       </div>
 
       {/* Canvas */}
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden shadow-inner">
-        <canvas ref={canvasRef} />
-      </div>
-
-      {/* Instructions */}
-      <div className="text-sm text-gray-600 text-center max-w-2xl">
-        <p className="mb-1">
-          <strong>Text:</strong> Click to edit, drag to move, use handles to resize
-        </p>
-        <p>
-          <strong>Image:</strong> Select and resize to crop, drag to reposition
-        </p>
+      <div className="flex-1 min-h-0 w-full flex items-center justify-center p-0 m-0 overflow-auto">
+        <div className="border-2 border-gray-300 rounded-lg overflow-hidden shadow-inner inline-block">
+          <canvas ref={canvasRef} />
+        </div>
       </div>
     </div>
   );

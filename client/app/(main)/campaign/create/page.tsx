@@ -139,7 +139,7 @@ export default function AddCampaignPage() {
           onImageGenerated={(updatedAdCopy) => setAdCopy(updatedAdCopy)}
         />;
       case 4:
-        return <DesignAd />;
+        return <DesignAd adCopy={adCopy} />;
       case 5:
         return <AdPreview />;
       default:
@@ -170,7 +170,7 @@ export default function AddCampaignPage() {
         </div>
 
         <div className="w-full max-w-7xl mx-auto px-6" style={{ height: '60vh', overflow: 'hidden' }}>
-          <div className="flex flex-col items-center justify-start h-full py-4">{renderStep()}</div>
+          <div className="flex flex-col items-center justify-start h-full">{renderStep()}</div>
         </div>
 
         <div className="w-full max-w-7xl mx-auto px-6 flex justify-end items-center" style={{ height: '20vh' }}>
