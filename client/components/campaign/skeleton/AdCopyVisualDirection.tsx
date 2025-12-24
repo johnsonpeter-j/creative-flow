@@ -9,17 +9,20 @@ interface AdCopyVisualDirectionProps {
   loading: boolean;
   campaignId: string;
   onImageGenerated?: (updatedAdCopy: AdCopy) => void;
+  onBakeTextChange?: (bakeText: boolean) => void;
 }
 
 const AdCopyVisualDirection: React.FC<AdCopyVisualDirectionProps> = ({ 
   adCopy, 
   loading, 
   campaignId,
-  onImageGenerated 
+  onImageGenerated,
+  onBakeTextChange
 }) => {
   const [imageLoading, setImageLoading] = useState(false);
   const [currentAdCopy, setCurrentAdCopy] = useState<AdCopy | null>(adCopy);
   const [isImageHovered, setIsImageHovered] = useState(false);
+  const [bakeTextWithAI, setBakeTextWithAI] = useState(false);
 
   const handleGenerateImage = async () => {
     if (!campaignId) {
@@ -29,7 +32,7 @@ const AdCopyVisualDirection: React.FC<AdCopyVisualDirectionProps> = ({
 
     setImageLoading(true);
     try {
-      const result = await generateImageApi(campaignId);
+      const result = await generateImageApi(campaignId, bakeTextWithAI);
       setCurrentAdCopy(result.ad_copy);
       if (onImageGenerated) {
         onImageGenerated(result.ad_copy);
@@ -130,90 +133,147 @@ const AdCopyVisualDirection: React.FC<AdCopyVisualDirectionProps> = ({
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-6 md:p-8 md:pl-10 pt-4" style={{ minHeight: 0 }}>
-              {displayAdCopy?.image_url ? (
-                <div className="space-y-4 md:space-y-6">
-                <div 
-                  className="w-full bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer shadow-inner"
-                  style={{ aspectRatio: '16/9' }}
-                  onMouseEnter={() => setIsImageHovered(true)}
-                  onMouseLeave={() => setIsImageHovered(false)}
-                  onClick={handleGenerateImage}
-                >
-                  <img
-                    src={displayAdCopy.image_url.startsWith('http') ? displayAdCopy.image_url : `http://localhost:8000${displayAdCopy.image_url}`}
-                    alt="Generated ad poster"
-                    className="w-full h-full object-cover transition-opacity duration-300"
-                    style={{ opacity: isImageHovered ? 0.5 : 1 }}
-                  />
-                  {isImageHovered && !imageLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                      <div className="flex flex-col items-center gap-2">
-                        <div 
-                          className="rounded-full p-3 transition-transform duration-300 shadow-lg"
-                          style={{
-                            backgroundColor: 'var(--color-frame)',
-                            transform: 'scale(1)',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.1)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                          }}
-                        >
-                          <RefreshCw className="w-6 h-6 text-white" />
-                        </div>
-                        <span 
-                          className="text-sm font-medium"
-                          style={{ 
-                            color: 'rgba(49, 49, 49, 0.95)',
-                            textShadow: '0 2px 4px rgba(255, 255, 255, 0.8)'
-                          }}
-                        >
-                          Regenerate Image
-                        </span>
-                      </div>
+              <div className="space-y-4 md:space-y-6">
+                {/* Bake Text with AI Checkbox */}
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={bakeTextWithAI}
+                      onChange={(e) => {
+                        setBakeTextWithAI(e.target.checked);
+                        if (onBakeTextChange) {
+                          onBakeTextChange(e.target.checked);
+                        }
+                      }}
+                      className="w-5 h-5 rounded border-gray-300"
+                      style={{ accentColor: 'var(--color-frame)' }}
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Bake text with AI</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {bakeTextWithAI 
+                          ? 'Image will be generated with text baked in. Design Your Ad step will be skipped.'
+                          : 'Image will be generated without text. You can edit text in Design Your Ad step.'}
+                      </p>
                     </div>
-                  )}
-                  {imageLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm">
-                      <div className="flex flex-col items-center gap-3">
-                        <Loader2 
-                          className="w-8 h-8 animate-spin" 
-                          style={{ color: 'var(--color-frame)' }}
-                        />
-                        <span 
-                          className="text-sm font-semibold"
-                          style={{ color: 'rgba(49, 49, 49, 0.95)' }}
-                        >
-                          Generating...
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                  </label>
                 </div>
+
+                {/* Generate Image Button */}
+                {!displayAdCopy?.image_url && (
+                  <button
+                    onClick={handleGenerateImage}
+                    disabled={imageLoading}
+                    className="w-full rounded-lg relative overflow-hidden transition-all duration-300 flex items-center justify-center gap-2"
+                    style={{
+                      padding: '14px',
+                      fontSize: 'clamp(13px, 1.1vw + 0.5rem, 14px)',
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontWeight: 400,
+                      backgroundColor: 'var(--color-frame)',
+                      color: 'rgba(237, 237, 237, 0.95)',
+                      boxShadow: '0 4px 16px rgba(198, 124, 78, 0.25)',
+                      opacity: imageLoading ? 0.7 : 1,
+                      cursor: imageLoading ? 'not-allowed' : 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!imageLoading) {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(198, 124, 78, 0.35)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(198, 124, 78, 0.25)';
+                    }}
+                  >
+                    {imageLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Generating Image...
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="w-5 h-5" />
+                        Generate Image
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Show image only if generated and checkbox is checked (baked text) */}
+                {displayAdCopy?.image_url && bakeTextWithAI && (
+                  <div className="space-y-4 md:space-y-6">
+                    <div 
+                      className="w-full bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer shadow-inner"
+                      style={{ aspectRatio: '16/9' }}
+                      onMouseEnter={() => setIsImageHovered(true)}
+                      onMouseLeave={() => setIsImageHovered(false)}
+                      onClick={handleGenerateImage}
+                    >
+                      <img
+                        src={displayAdCopy.image_url.startsWith('http') ? displayAdCopy.image_url : `http://localhost:8000${displayAdCopy.image_url}`}
+                        alt="Generated ad poster"
+                        className="w-full h-full object-cover transition-opacity duration-300"
+                        style={{ opacity: isImageHovered ? 0.5 : 1 }}
+                      />
+                      {isImageHovered && !imageLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                          <div className="flex flex-col items-center gap-2">
+                            <div 
+                              className="rounded-full p-3 transition-transform duration-300 shadow-lg"
+                              style={{
+                                backgroundColor: 'var(--color-frame)',
+                                transform: 'scale(1)',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.1)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                              }}
+                            >
+                              <RefreshCw className="w-6 h-6 text-white" />
+                            </div>
+                            <span 
+                              className="text-sm font-medium"
+                              style={{ 
+                                color: 'rgba(49, 49, 49, 0.95)',
+                                textShadow: '0 2px 4px rgba(255, 255, 255, 0.8)'
+                              }}
+                            >
+                              Regenerate Image
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      {imageLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm">
+                          <div className="flex flex-col items-center gap-3">
+                            <Loader2 
+                              className="w-8 h-8 animate-spin" 
+                              style={{ color: 'var(--color-frame)' }}
+                            />
+                            <span 
+                              className="text-sm font-semibold"
+                              style={{ color: 'rgba(49, 49, 49, 0.95)' }}
+                            >
+                              Generating...
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Visual Description */}
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Visual Description</p>
                   <p className="text-sm text-gray-700 leading-relaxed">{displayAdCopy.visual_direction}</p>
                 </div>
-                </div>
-              ) : (
-                <div className="space-y-4 md:space-y-6">
-                  <div 
-                    className="w-full bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300"
-                    style={{ aspectRatio: '16/9', minHeight: '200px' }}
-                  >
-                    <div className="text-center text-gray-400">
-                      <ImageIcon className="w-16 h-16 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm font-medium">No image generated yet</p>
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Visual Description</p>
-                    <p className="text-sm text-gray-700 leading-relaxed">{displayAdCopy.visual_direction}</p>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

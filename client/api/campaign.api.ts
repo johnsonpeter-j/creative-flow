@@ -124,10 +124,10 @@ export const generateAdCopyApi = async (campaignId: string, selectedIdeaIndex: n
 /**
  * Generate or regenerate image for campaign ad copy
  */
-export const generateImageApi = async (campaignId: string) => {
+export const generateImageApi = async (campaignId: string, bakeText: boolean = false) => {
   const response = await axiosInstance.post<GenerateAdCopyResponse>(
     `/campaigns/${campaignId}/generate-image`,
-    {},
+    { bake_text: bakeText },
     { timeout: 120000 } // 120 seconds timeout for AI image generation
   );
   return response.data;

@@ -1,6 +1,6 @@
 import json
 import base64
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from pathlib import Path
 import google.generativeai as genai
 from datetime import datetime
@@ -58,11 +58,9 @@ class AdCopyVisualAgent:
         )
         
         # Step 2: Generate image based on visual direction (optional, can return None)
-        image_url = await self._generate_image(
-            visual_direction=ad_copy_result.get("visual_direction", ""),
-            headline=ad_copy_result.get("headline", ""),
-            campaign_brief=campaign_brief
-        )
+        # NOTE: Image generation is now manual - user clicks "Generate Image" button in UI
+        # So we don't generate image here initially
+        image_url = None  # Don't generate image initially - user will generate it manually
         
         # Ensure text_layers is always present, even if AI didn't generate it
         # Keep it minimal - only headline and CTA to avoid clutter
@@ -263,13 +261,73 @@ Return ONLY the JSON object, no additional text or markdown formatting."""
         self,
         visual_direction: str,
         headline: str,
-        campaign_brief: str
+        campaign_brief: str,
+        bake_text: bool = False,
+        text_content: Optional[Dict[str, str]] = None
     ) -> Optional[str]:
         """Generate an image based on visual direction using Gemini 2.5 Flash Image model"""
         
-        # Create a detailed image generation prompt - CONCEPT-BASED, NO TEXT
-        # Extract the core concept from campaign brief to represent it visually
-        image_prompt = f"""Create a professional, concept-based advertising image. This is a PURELY VISUAL image with ABSOLUTELY NO TEXT.
+        if bake_text and text_content:
+            # AI has FULL creative control - professional designer makes all decisions
+            # Only headline in image - body and CTA are for social media content
+            headline = text_content.get('headline', '')
+            
+            image_prompt = f"""You are an award-winning professional advertising poster designer with 20+ years of experience creating iconic campaigns for Fortune 500 companies. You have complete creative freedom and artistic control.
+
+YOUR MISSION: Design a stunning, professional advertising poster that would win design awards and be featured in design magazines.
+
+CAMPAIGN BRIEF:
+{campaign_brief}
+
+VISUAL DIRECTION:
+{visual_direction}
+
+HEADLINE TO INCLUDE IN THE IMAGE (You have full creative control over how to design this):
+"{headline}"
+
+NOTE: Only the headline goes in the image. Body text and CTA are for social media captions, not in the visual.
+
+YOUR CREATIVE FREEDOM - YOU DECIDE EVERYTHING:
+
+1. TYPOGRAPHY & TEXT DESIGN (Your Choice):
+   - Choose the perfect font (display fonts, serif, sans-serif - whatever works best)
+   - Decide text size, weight, and style
+   - Determine text color (you choose what looks best)
+   - Apply your own text treatments: shadows, outlines, gradients, glows, 3D effects
+   - Position the headline wherever it looks best (you're the designer)
+   - Make typography decisions like a master designer
+
+2. COLOR PALETTE (Your Choice):
+   - Select colors that enhance the message and visual impact
+   - Choose text color that creates maximum contrast and readability
+   - Use color psychology to support the campaign message
+   - Create a cohesive color scheme throughout
+
+3. COMPOSITION & LAYOUT (Your Choice):
+   - Design the layout using professional composition principles
+   - Decide where the headline should go for maximum impact
+   - Create visual flow and hierarchy
+   - Use negative space strategically
+   - Balance all elements perfectly
+
+4. VISUAL BACKGROUND (Your Creation):
+   - Design a background that complements and enhances the headline
+   - Use photography, illustration, or graphic elements - your choice
+   - Create depth, atmosphere, and mood
+   - Ensure background supports the message without competing
+
+5. OVERALL DESIGN EXCELLENCE:
+   - Create a premium, polished, professional design
+   - Make it magazine-worthy, billboard-worthy, award-worthy
+   - Every element should be intentional and well-designed
+   - The final result should look like it came from a top-tier design agency
+
+REMEMBER: You are the professional designer. You have complete creative control. Make all design decisions - colors, fonts, positions, styles, effects - everything. Create something beautiful, impactful, and professionally designed.
+
+Design this poster as if your reputation depends on it. Make it exceptional."""
+        else:
+            # Generate image WITHOUT text (original behavior)
+            image_prompt = f"""Create a professional, concept-based advertising image. This is a PURELY VISUAL image with ABSOLUTELY NO TEXT.
 
 Campaign Context: {campaign_brief}
 Visual Style Guide: {visual_direction}

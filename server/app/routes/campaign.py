@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from typing import List
 from bson import ObjectId
+from pydantic import BaseModel
 from app.schemas.campaign import (
     CreateCampaignRequest,
     CampaignResponse,
@@ -280,13 +281,21 @@ async def generate_ad_copy(
         raise HTTPException(status_code=500, detail=f"Failed to generate ad copy: {error_detail}")
 
 
+class GenerateImageRequest(BaseModel):
+    bake_text: bool = False
+
 @router.post("/{campaign_id}/generate-image", response_model=GenerateAdCopyResponse)
 async def generate_image(
     campaign_id: str,
+    request: GenerateImageRequest = Body(...),
     user_id: str = Depends(get_current_user_id),
     campaign_repo: CampaignRepository = Depends(get_campaign_repository)
 ):
     """Generate or regenerate image for campaign ad copy"""
+    print(f"=== Generate Image Request ===")
+    print(f"Campaign ID: {campaign_id}")
+    print(f"Bake text: {request.bake_text}")
+    print(f"Request body: {request}")
     try:
         # Get campaign
         campaign = await campaign_repo.get_by_id(campaign_id)
@@ -301,13 +310,28 @@ async def generate_image(
         if not campaign.ad_copy:
             raise HTTPException(status_code=400, detail="Ad copy must be generated first")
         
-        # Generate image using the visual direction
+        # When bake_text is true, AI has full creative control - only headline in image
+        # Body and CTA are for social media content, not in the image
+        text_content = None
+        if request.bake_text:
+            # AI gets full control - only headline goes in image (body & CTA for social media)
+            text_content = {
+                "headline": campaign.ad_copy.headline
+            }
+            print("Bake text enabled - AI has full creative control, headline only in image")
+        
+        # Generate image using the visual direction (with or without text based on bake_text)
         campaign_service = get_campaign_service()
         image_url = await campaign_service.generate_image_only(
             visual_direction=campaign.ad_copy.visual_direction,
             headline=campaign.ad_copy.headline,
-            campaign_brief=campaign.campaign_brief
+            campaign_brief=campaign.campaign_brief,
+            bake_text=request.bake_text,
+            text_content=text_content  # Pass content, not styled layers
         )
+        
+        final_image_url = image_url
+        # AI now handles text baking in the image generation prompt - no need for PIL overlay
         
         # Update the ad_copy with new image_url (preserve text_layers if they exist)
         ad_copy_dict = {
@@ -315,7 +339,7 @@ async def generate_image(
             "body": campaign.ad_copy.body,
             "call_to_action": campaign.ad_copy.call_to_action,
             "visual_direction": campaign.ad_copy.visual_direction,
-            "image_url": image_url
+            "image_url": final_image_url
         }
         # Preserve text_layers if they exist
         if hasattr(campaign.ad_copy, 'text_layers') and campaign.ad_copy.text_layers:

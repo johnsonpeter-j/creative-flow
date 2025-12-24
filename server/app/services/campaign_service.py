@@ -124,7 +124,9 @@ class CampaignService:
         self,
         visual_direction: str,
         headline: str,
-        campaign_brief: str
+        campaign_brief: str,
+        bake_text: bool = False,
+        text_content: Optional[Dict[str, str]] = None
     ) -> Optional[str]:
         """
         Generate image only (without ad copy generation)
@@ -140,7 +142,9 @@ class CampaignService:
         return await self.ad_copy_visual_agent.generate_image_only(
             visual_direction=visual_direction,
             headline=headline,
-            campaign_brief=campaign_brief
+            campaign_brief=campaign_brief,
+            bake_text=bake_text,
+            text_content=text_content
         )
 
 
@@ -156,4 +160,5 @@ def get_campaign_service() -> CampaignService:
 
 # For backward compatibility
 campaign_service = None  # Will be initialized on first use
+
 

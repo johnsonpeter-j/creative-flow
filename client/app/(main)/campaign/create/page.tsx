@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CampaignHeader from '@/components/campaign/CampaignHeader';
 import ContentType from '@/components/campaign/skeleton/content_type';
 import CampaignIdeas from '@/components/campaign/skeleton/CampaignIdeas';
@@ -26,10 +26,18 @@ export default function AddCampaignPage() {
   const [adCopy, setAdCopy] = useState<AdCopy | null>(null);
   const [editedImageDataURL, setEditedImageDataURL] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bakeTextWithAI, setBakeTextWithAI] = useState(false);
   const [objective, setObjective] = useState<string>('Awareness');
   const [targetAudience, setTargetAudience] = useState<string>('');
   const [adFormats, setAdFormats] = useState<string[]>([]);
   const currentStepTitle = STEPS.find((s) => s.step === currentStep)?.title || 'Create Campaign';
+
+  // Auto-skip step 4 if text is baked with AI
+  useEffect(() => {
+    if (currentStep === 4 && bakeTextWithAI && adCopy?.image_url) {
+      setCurrentStep(5);
+    }
+  }, [currentStep, bakeTextWithAI, adCopy?.image_url]);
 
   const handleNext = async () => {
     if (currentStep === 1) {
@@ -107,6 +115,21 @@ export default function AddCampaignPage() {
       } finally {
         setLoading(false);
       }
+    } else if (currentStep === 3) {
+      // Step 3: Ad Copy & Visual Direction -> Next step
+      // Check if image is generated
+      if (!adCopy?.image_url) {
+        alert('Please generate the image first by clicking "Generate Image" button.');
+        return;
+      }
+      
+      // If bakeTextWithAI is checked and image exists, skip to preview (step 5)
+      // Otherwise go to Design Your Ad (step 4)
+      if (bakeTextWithAI && adCopy?.image_url) {
+        setCurrentStep(5); // Skip to preview
+      } else {
+        setCurrentStep(4); // Go to Design Your Ad
+      }
     } else if (currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -138,8 +161,14 @@ export default function AddCampaignPage() {
           loading={loading} 
           campaignId={campaignId}
           onImageGenerated={(updatedAdCopy) => setAdCopy(updatedAdCopy)}
+          onBakeTextChange={setBakeTextWithAI}
         />;
       case 4:
+        // Skip Design Your Ad step if text is baked with AI
+        if (bakeTextWithAI && adCopy?.image_url) {
+          // Automatically skip to preview step
+          return null; // Will be handled by useEffect
+        }
         return <DesignAd adCopy={adCopy} onEditedImageChange={setEditedImageDataURL} />;
       case 5:
         return <AdPreview adCopy={adCopy} editedImageDataURL={editedImageDataURL} />;
@@ -188,11 +217,11 @@ export default function AddCampaignPage() {
                 backgroundColor: 'var(--color-frame)',
                 color: 'rgba(237, 237, 237, 0.95)',
                 boxShadow: '0 4px 16px rgba(198, 124, 78, 0.25)',
-                opacity: ((currentStep === 1 && (!campaignBrief || adFormats.length === 0)) || (currentStep === 2 && selectedIdea === null) || loading) ? 0.5 : 1,
-                cursor: ((currentStep === 1 && (!campaignBrief || adFormats.length === 0)) || (currentStep === 2 && selectedIdea === null) || loading) ? 'not-allowed' : 'pointer',
+                opacity: ((currentStep === 1 && (!campaignBrief || adFormats.length === 0)) || (currentStep === 2 && selectedIdea === null) || (currentStep === 3 && !adCopy?.image_url) || loading) ? 0.5 : 1,
+                cursor: ((currentStep === 1 && (!campaignBrief || adFormats.length === 0)) || (currentStep === 2 && selectedIdea === null) || (currentStep === 3 && !adCopy?.image_url) || loading) ? 'not-allowed' : 'pointer',
               }}
               onMouseEnter={(e) => {
-                if (!loading && !((currentStep === 1 && (!campaignBrief || adFormats.length === 0)) || (currentStep === 2 && selectedIdea === null))) {
+                if (!loading && !((currentStep === 1 && (!campaignBrief || adFormats.length === 0)) || (currentStep === 2 && selectedIdea === null) || (currentStep === 3 && !adCopy?.image_url))) {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 8px 24px rgba(198, 124, 78, 0.35)';
                 }
@@ -202,7 +231,13 @@ export default function AddCampaignPage() {
                 e.currentTarget.style.boxShadow = '0 4px 16px rgba(198, 124, 78, 0.25)';
               }}
             >
-              {loading ? 'Generating Ideas...' : (currentStep === 1 ? 'Generate Campaign Ideas' : 'Next')}
+              {loading 
+                ? 'Generating Ideas...' 
+                : currentStep === 1 
+                  ? 'Generate Campaign Ideas' 
+                  : currentStep === 3 && !adCopy?.image_url
+                    ? 'Generate Image First'
+                    : 'Next'}
               {!loading && <span style={{ fontSize: '16px' }}>→</span>}
             </button>
           ) : (
