@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from bson import ObjectId
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
@@ -19,6 +19,7 @@ class AdCopyModel(BaseModel):
     call_to_action: str
     visual_direction: str
     image_url: Optional[str] = None
+    text_layers: Optional[List[Dict[str, Any]]] = None
 
 
 class CampaignModel(BaseModel):
@@ -54,4 +55,5 @@ class CampaignModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True
     )
+
 

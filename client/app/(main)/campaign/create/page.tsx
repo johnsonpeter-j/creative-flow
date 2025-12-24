@@ -14,7 +14,7 @@ const STEPS = [
   { step: 2, title: 'Campaign Ideas' },
   { step: 3, title: 'Ad Copy & Visual Direction' },
   { step: 4, title: 'Design Your Ad' },
-  { step: 5, 'title': 'Your Ad Is Ready' },
+  { step: 5, title: 'Your Ad Is Ready' },
 ];
 
 export default function AddCampaignPage() {
@@ -24,6 +24,7 @@ export default function AddCampaignPage() {
   const [campaignId, setCampaignId] = useState<string>('');
   const [campaignIdeas, setCampaignIdeas] = useState<CampaignIdea[]>([]);
   const [adCopy, setAdCopy] = useState<AdCopy | null>(null);
+  const [editedImageDataURL, setEditedImageDataURL] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [objective, setObjective] = useState<string>('Awareness');
   const [targetAudience, setTargetAudience] = useState<string>('');
@@ -139,9 +140,9 @@ export default function AddCampaignPage() {
           onImageGenerated={(updatedAdCopy) => setAdCopy(updatedAdCopy)}
         />;
       case 4:
-        return <DesignAd adCopy={adCopy} />;
+        return <DesignAd adCopy={adCopy} onEditedImageChange={setEditedImageDataURL} />;
       case 5:
-        return <AdPreview />;
+        return <AdPreview adCopy={adCopy} editedImageDataURL={editedImageDataURL} />;
       default:
         return <ContentType 
           campaignBrief={campaignBrief} 
@@ -169,8 +170,8 @@ export default function AddCampaignPage() {
             />
         </div>
 
-        <div className="w-full max-w-7xl mx-auto px-6" style={{ height: '60vh', overflow: 'hidden' }}>
-          <div className="flex flex-col items-center justify-start h-full">{renderStep()}</div>
+        <div className="w-full max-w-7xl mx-auto px-6" style={{ minHeight: '60vh', overflow: 'auto' }}>
+          <div className="flex flex-col items-center justify-start min-h-full">{renderStep()}</div>
         </div>
 
         <div className="w-full max-w-7xl mx-auto px-6 flex justify-end items-center" style={{ height: '20vh' }}>

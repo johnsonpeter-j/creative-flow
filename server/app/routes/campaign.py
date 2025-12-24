@@ -143,7 +143,8 @@ async def get_campaign(
             body=campaign.ad_copy.body,
             call_to_action=campaign.ad_copy.call_to_action,
             visual_direction=campaign.ad_copy.visual_direction,
-            image_url=campaign.ad_copy.image_url
+            image_url=campaign.ad_copy.image_url,
+            text_layers=getattr(campaign.ad_copy, 'text_layers', None)
         )
     
     return CampaignResponse(
@@ -180,7 +181,8 @@ async def get_user_campaigns(
                 body=campaign.ad_copy.body,
                 call_to_action=campaign.ad_copy.call_to_action,
                 visual_direction=campaign.ad_copy.visual_direction,
-                image_url=campaign.ad_copy.image_url
+                image_url=campaign.ad_copy.image_url,
+                text_layers=getattr(campaign.ad_copy, 'text_layers', None)
             )
         
         result.append(CampaignResponse(
@@ -247,7 +249,8 @@ async def generate_ad_copy(
             "body": result["body"],
             "call_to_action": result["call_to_action"],
             "visual_direction": result["visual_direction"],
-            "image_url": result.get("image_url")
+            "image_url": result.get("image_url"),
+            "text_layers": result.get("text_layers", [])
         }
         
         # Update campaign with ad copy
@@ -306,7 +309,7 @@ async def generate_image(
             campaign_brief=campaign.campaign_brief
         )
         
-        # Update the ad_copy with new image_url
+        # Update the ad_copy with new image_url (preserve text_layers if they exist)
         ad_copy_dict = {
             "headline": campaign.ad_copy.headline,
             "body": campaign.ad_copy.body,
@@ -314,6 +317,9 @@ async def generate_image(
             "visual_direction": campaign.ad_copy.visual_direction,
             "image_url": image_url
         }
+        # Preserve text_layers if they exist
+        if hasattr(campaign.ad_copy, 'text_layers') and campaign.ad_copy.text_layers:
+            ad_copy_dict["text_layers"] = campaign.ad_copy.text_layers
         
         update_data = {
             "ad_copy": ad_copy_dict
@@ -328,7 +334,8 @@ async def generate_image(
             body=updated_campaign.ad_copy.body,
             call_to_action=updated_campaign.ad_copy.call_to_action,
             visual_direction=updated_campaign.ad_copy.visual_direction,
-            image_url=updated_campaign.ad_copy.image_url
+            image_url=updated_campaign.ad_copy.image_url,
+            text_layers=getattr(updated_campaign.ad_copy, 'text_layers', None)
         )
         
         return GenerateAdCopyResponse(
@@ -344,4 +351,5 @@ async def generate_image(
         print(f"Error generating image: {error_detail}")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Failed to generate image: {error_detail}")
+
 

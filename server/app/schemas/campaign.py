@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
 
@@ -45,6 +45,20 @@ class GenerateIdeasResponse(BaseModel):
     message: str
 
 
+class TextLayerSchema(BaseModel):
+    """Text layer schema for ad design"""
+    text: str
+    type: str
+    fontSize: int
+    fontFamily: str
+    fill: str
+    left: float
+    top: float
+    fontWeight: str
+    fontStyle: str
+    textAlign: str
+
+
 class AdCopySchema(BaseModel):
     """Ad copy and visual direction schema"""
     headline: str
@@ -52,6 +66,7 @@ class AdCopySchema(BaseModel):
     call_to_action: str
     visual_direction: str
     image_url: Optional[str] = None
+    text_layers: Optional[List[Dict[str, Any]]] = None
 
 
 class GenerateAdCopyRequest(BaseModel):
@@ -82,4 +97,5 @@ class CampaignResponse(BaseModel):
     status: str
     created_at: str
     updated_at: str
+
 

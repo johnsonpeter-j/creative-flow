@@ -64,12 +64,57 @@ class AdCopyVisualAgent:
             campaign_brief=campaign_brief
         )
         
+        # Ensure text_layers is always present, even if AI didn't generate it
+        # Keep it minimal - only headline and CTA to avoid clutter
+        text_layers = ad_copy_result.get("text_layers", [])
+        if not text_layers or len(text_layers) == 0:
+            # Create minimal default text_layers - only headline and CTA (skip body to avoid clutter)
+            headline_text = ad_copy_result.get("headline", "")
+            cta_text = ad_copy_result.get("call_to_action", "")
+            
+            # Truncate if too long to avoid visual clutter
+            if len(headline_text) > 60:
+                headline_text = headline_text[:57] + "..."
+            if len(cta_text) > 30:
+                cta_text = cta_text[:27] + "..."
+            
+            text_layers = [
+                {
+                    "text": headline_text,
+                    "type": "headline",
+                    "fontSize": 36,
+                    "fontFamily": "Impact",
+                    "fill": "#1a1a1a",
+                    "left": 50,
+                    "top": 10,
+                    "fontWeight": "bold",
+                    "fontStyle": "normal",
+                    "textAlign": "center"
+                },
+                {
+                    "text": cta_text,
+                    "type": "cta",
+                    "fontSize": 26,
+                    "fontFamily": "Arial",
+                    "fill": "#FFFFFF",
+                    "left": 50,
+                    "top": 90,
+                    "fontWeight": "bold",
+                    "fontStyle": "normal",
+                    "textAlign": "center"
+                }
+            ]
+        else:
+            # Filter out body text layers if present - keep only headline and CTA
+            text_layers = [layer for layer in text_layers if layer.get("type") != "body"]
+        
         return {
             "headline": ad_copy_result.get("headline", ""),
             "body": ad_copy_result.get("body", ""),
             "call_to_action": ad_copy_result.get("call_to_action", ""),
             "visual_direction": ad_copy_result.get("visual_direction", ""),
-            "image_url": image_url
+            "image_url": image_url,
+            "text_layers": text_layers
         }
     
     async def _generate_ad_copy(
@@ -101,13 +146,83 @@ Return ONLY a valid JSON object with:
 - "body": The main body copy (max 300 characters, persuasive and engaging)
 - "call_to_action": A clear call-to-action (max 50 characters, action-oriented)
 - "visual_direction": Detailed description of ONLY visual elements for a concept-based image with ABSOLUTELY NO TEXT. Describe: specific visual objects/scenes, colors, mood, composition, and visual metaphors that represent the product/service concept. Examples: For food delivery: "Colorful food items arranged attractively, delivery bag with food containers, happy diverse people enjoying meals, restaurant/kitchen background, warm inviting colors, energetic positive mood". For fashion: "Stylish clothing items displayed elegantly, models in fashionable settings, accessories, vibrant colors, sophisticated mood". DO NOT mention any text, words, letters, numbers, or typography. (max 280 characters)
+- "text_layers": An array of text layer objects with design properties. Each text layer should have:
+  - "text": The text content (headline, body, or call_to_action)
+  - "type": "headline", "body", or "cta"
+  - "fontSize": Number between 24-72 for headline, 16-32 for body, 18-36 for CTA
+  - "fontFamily": One of: "Inter", "Arial", "Helvetica", "Times New Roman", "Georgia", "Verdana", "Courier New", "Comic Sans MS", "Impact", "Trebuchet MS"
+  - "fill": Hex color code (e.g., "#000000" for black, "#FFFFFF" for white, or a brand-appropriate color)
+  - "left": X position as percentage of canvas width (0-100, e.g., 10 for 10% from left, 50 for center)
+  - "top": Y position as percentage of canvas height (0-100, e.g., 10 for 10% from top, 50 for middle)
+  - "fontWeight": "normal" or "bold"
+  - "fontStyle": "normal" or "italic"
+  - "textAlign": "left", "center", or "right"
+
+CRITICAL REQUIREMENTS for text_layers positioning - KEEP IT SIMPLE AND CLEAN:
+1. MINIMAL TEXT LAYERS: Only create 2 text layers maximum - Headline and CTA. Skip Body text to avoid clutter and overlap.
+
+2. CONSERVATIVE POSITIONING - AVOID CENTER AT ALL COSTS:
+   - Headline: Place at VERY TOP (top: 8-12%) - center aligned (left: 50, textAlign: "center"). Keep it small and unobtrusive.
+   - CTA: Place at VERY BOTTOM (top: 88-92%) - center aligned (left: 50, textAlign: "center"). Keep it compact.
+   - NEVER place text in the center area (top: 30-70%) where main subjects are
+
+3. SMALLER FONT SIZES - LESS IS MORE:
+   - Headline: Use fontSize 32-40 (not too large, avoid dominating the image)
+   - CTA: Use fontSize 24-28 (compact and readable)
+   - Smaller fonts = less overlap risk
+
+4. MAXIMUM SPACING:
+   - Headline at top: 8-12%
+   - CTA at bottom: 88-92%
+   - This creates 76-84% gap between them - plenty of space for the image
+
+5. COLOR CONTRAST - USE HIGH CONTRAST:
+   - For light/bright images: Use dark text (#000000 or #1a1a1a)
+   - For dark images: Use white text (#FFFFFF)
+   - Always ensure maximum readability
+
+6. HORIZONTAL CENTERING:
+   - Both text layers should be center-aligned (left: 50, textAlign: "center")
+   - This ensures text doesn't cover important side elements
+
+7. TEXT CONTENT - KEEP IT SHORT:
+   - Headline: Maximum 60 characters (shorter = less visual clutter)
+   - CTA: Maximum 30 characters (short and punchy)
+
+IMPORTANT: Only return 2 text_layers (headline and cta). Do NOT include body text layer to avoid overcrowding.
 
 Example format:
 {{
   "headline": "Walk the Walk, Change the World",
   "body": "Your every step can make a difference. Our new eco-friendly sneakers are crafted from 100% recycled materials, combining sustainable style with unparalleled comfort. Join the movement.",
   "call_to_action": "Shop Now",
-  "visual_direction": "Vibrant outdoor scene with diverse people walking in eco-friendly sneakers on a nature trail surrounded by lush green trees and clear blue sky, bright green and earth tones, optimistic mood, dynamic composition showing movement and nature connection, sneakers visible with eco-friendly design details"
+  "visual_direction": "Vibrant outdoor scene with diverse people walking in eco-friendly sneakers on a nature trail surrounded by lush green trees and clear blue sky, bright green and earth tones, optimistic mood, dynamic composition showing movement and nature connection, sneakers visible with eco-friendly design details",
+  "text_layers": [
+    {{
+      "text": "Walk the Walk, Change the World",
+      "type": "headline",
+      "fontSize": 36,
+      "fontFamily": "Impact",
+      "fill": "#1a1a1a",
+      "left": 50,
+      "top": 10,
+      "fontWeight": "bold",
+      "fontStyle": "normal",
+      "textAlign": "center"
+    }},
+    {{
+      "text": "Shop Now",
+      "type": "cta",
+      "fontSize": 26,
+      "fontFamily": "Arial",
+      "fill": "#FFFFFF",
+      "left": 50,
+      "top": 90,
+      "fontWeight": "bold",
+      "fontStyle": "normal",
+      "textAlign": "center"
+    }}
+  ]
 }}
 
 Return ONLY the JSON object, no additional text or markdown formatting."""
@@ -364,12 +479,39 @@ Generate a high-quality, professional advertising image that represents the camp
             traceback.print_exc()
             return None
     
-    def _get_default_ad_copy(self) -> Dict[str, str]:
+    def _get_default_ad_copy(self) -> Dict[str, Any]:
         """Return default ad copy if generation fails"""
         return {
             "headline": "Experience the Difference",
             "body": "Discover our innovative products designed to enhance your lifestyle. Quality meets style in every detail.",
             "call_to_action": "Learn More",
-            "visual_direction": "Modern, clean design with vibrant colors, professional photography showcasing product visuals, optimistic mood, concept-based imagery with relevant visual elements representing the product or service"
+            "visual_direction": "Modern, clean design with vibrant colors, professional photography showcasing product visuals, optimistic mood, concept-based imagery with relevant visual elements representing the product or service",
+            "text_layers": [
+                {
+                    "text": "Experience the Difference",
+                    "type": "headline",
+                    "fontSize": 36,
+                    "fontFamily": "Impact",
+                    "fill": "#1a1a1a",
+                    "left": 50,
+                    "top": 10,
+                    "fontWeight": "bold",
+                    "fontStyle": "normal",
+                    "textAlign": "center"
+                },
+                {
+                    "text": "Learn More",
+                    "type": "cta",
+                    "fontSize": 26,
+                    "fontFamily": "Arial",
+                    "fill": "#FFFFFF",
+                    "left": 50,
+                    "top": 90,
+                    "fontWeight": "bold",
+                    "fontStyle": "normal",
+                    "textAlign": "center"
+                }
+            ]
         }
+
 

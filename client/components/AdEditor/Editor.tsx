@@ -29,18 +29,26 @@ interface EditorProps {
     fontSize?: number;
     fill?: string;
     fontFamily?: string;
+    fontWeight?: 'normal' | 'bold';
+    fontStyle?: 'normal' | 'italic';
+    textAlign?: 'left' | 'center' | 'right';
   };
   initialTexts?: Array<{
     text: string;
+    type?: 'headline' | 'body' | 'cta';
     left?: number;
     top?: number;
     fontSize?: number;
     fill?: string;
     fontFamily?: string;
+    fontWeight?: 'normal' | 'bold';
+    fontStyle?: 'normal' | 'italic';
+    textAlign?: 'left' | 'center' | 'right';
   }>;
+  onCanvasChange?: (dataURL: string) => void;
 }
 
-const Editor: React.FC<EditorProps> = ({ initialImage, initialText, initialTexts }) => {
+const Editor: React.FC<EditorProps> = ({ initialImage, initialText, initialTexts, onCanvasChange }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [selectedObject, setSelectedObject] = useState<fabric.Object | null>(null);
@@ -103,10 +111,35 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText, initialTexts
       setSelectedObject(null);
     });
 
-    // Save state for undo/redo
-    fabricCanvas.on('object:modified', saveState);
-    fabricCanvas.on('object:added', saveState);
-    fabricCanvas.on('object:removed', saveState);
+    // Function to notify parent of canvas changes
+    const notifyCanvasChange = () => {
+      if (onCanvasChange && fabricCanvas) {
+        try {
+          const dataURL = fabricCanvas.toDataURL({
+            format: 'jpeg',
+            quality: 1,
+            multiplier: 1,
+          });
+          onCanvasChange(dataURL);
+        } catch (error) {
+          console.error('Error generating canvas data URL:', error);
+        }
+      }
+    };
+
+    // Save state for undo/redo and notify changes
+    fabricCanvas.on('object:modified', () => {
+      saveState();
+      notifyCanvasChange();
+    });
+    fabricCanvas.on('object:added', () => {
+      saveState();
+      notifyCanvasChange();
+    });
+    fabricCanvas.on('object:removed', () => {
+      saveState();
+      notifyCanvasChange();
+    });
 
     // Handle text editing to recalculate dimensions
     fabricCanvas.on('text:changed', (e) => {
@@ -114,6 +147,7 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText, initialTexts
       if (obj && obj.type === 'textbox') {
         obj.initDimensions();
         fabricCanvas.renderAll();
+        notifyCanvasChange();
       }
     });
 
@@ -124,6 +158,7 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText, initialTexts
         obj.initDimensions();
         fabricCanvas.renderAll();
         saveState();
+        notifyCanvasChange();
       }
     });
 
@@ -224,36 +259,142 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText, initialTexts
   useEffect(() => {
     const addTextLayers = (texts: Array<{
       text: string;
+      type?: 'headline' | 'body' | 'cta';
       left?: number;
       top?: number;
       fontSize?: number;
       fill?: string;
       fontFamily?: string;
+      fontWeight?: 'normal' | 'bold';
+      fontStyle?: 'normal' | 'italic';
+      textAlign?: 'left' | 'center' | 'right';
     }>) => {
       if (!canvas) return;
       
-      texts.forEach((textConfig, index) => {
+      const canvasWidth = canvas.width || 800;
+      const canvasHeight = canvas.height || 600;
+      const placedTexts: Array<{ top: number; bottom: number; left: number; right: number }> = [];
+      const minVerticalSpacing = canvasHeight * 0.15; // 15% minimum spacing between texts
+      
+      // Sort texts by type: headline first, then CTA (skip body)
+      const sortedTexts = texts
+        .filter(t => t.type !== 'body') // Remove body text to avoid clutter
+        .sort((a, b) => {
+          const order = { headline: 0, cta: 1 };
+          return (order[a.type as keyof typeof order] ?? 2) - (order[b.type as keyof typeof order] ?? 2);
+        });
+      
+      sortedTexts.forEach((textConfig, index) => {
         setTimeout(() => {
+          // Convert percentage positions to pixels if needed (API returns 0-100 for percentages)
+          // If value is <= 100, treat as percentage; if > 100, treat as pixels
+          let left = textConfig.left !== undefined 
+            ? (textConfig.left <= 100 ? (textConfig.left / 100) * canvasWidth : textConfig.left) 
+            : canvasWidth / 2; // Default to center
+          
+          // For center-aligned text, adjust left position
+          if (textConfig.textAlign === 'center') {
+            left = canvasWidth / 2;
+          }
+          
+          let top = textConfig.top !== undefined 
+            ? (textConfig.top <= 100 ? (textConfig.top / 100) * canvasHeight : textConfig.top) 
+            : (textConfig.type === 'headline' ? canvasHeight * 0.1 : canvasHeight * 0.9);
+          
+          // Estimate text dimensions
+          const fontSize = textConfig.fontSize || 32;
+          const estimatedHeight = fontSize * 2; // More conservative height estimate
+          const estimatedWidth = Math.min(canvasWidth * 0.8, textConfig.text.length * fontSize * 0.6);
+          
+          // Adjust left for center alignment
+          if (textConfig.textAlign === 'center') {
+            left = (canvasWidth - estimatedWidth) / 2;
+          }
+          
+          const bottom = top + estimatedHeight;
+          const right = left + estimatedWidth;
+          
+          // Check for overlap with previously placed texts and adjust if needed
+          let adjusted = false;
+          for (const placed of placedTexts) {
+            // Check vertical overlap
+            const verticalOverlap = !(bottom < placed.top || top > placed.bottom);
+            // Check horizontal overlap (with some margin)
+            const horizontalOverlap = !(right < placed.left - 20 || left > placed.right + 20);
+            
+            if (verticalOverlap && horizontalOverlap) {
+              // Adjust position to avoid overlap
+              if (textConfig.type === 'headline') {
+                // Headline should be at top - move it up if needed
+                top = Math.max(10, placed.top - estimatedHeight - minVerticalSpacing);
+              } else if (textConfig.type === 'cta') {
+                // CTA should be at bottom - move it down if needed
+                top = Math.min(canvasHeight - estimatedHeight - 10, placed.bottom + minVerticalSpacing);
+              } else {
+                // For other types, find a safe position
+                if (top < placed.top) {
+                  top = placed.top - estimatedHeight - minVerticalSpacing;
+                } else {
+                  top = placed.bottom + minVerticalSpacing;
+                }
+              }
+              adjusted = true;
+            }
+          }
+          
+          // Ensure text stays within canvas bounds
+          top = Math.max(10, Math.min(top, canvasHeight - estimatedHeight - 10));
+          left = Math.max(10, Math.min(left, canvasWidth - estimatedWidth - 10));
+          
+          // Store this text's position for future overlap checks
+          placedTexts.push({ 
+            top, 
+            bottom: top + estimatedHeight, 
+            left, 
+            right: left + estimatedWidth 
+          });
+          
+          // Adjust width based on text length and canvas size
+          const maxWidth = Math.min(canvasWidth * 0.85, 600);
           const text = new fabric.Textbox(textConfig.text, {
-            left: textConfig.left || 100,
-            top: textConfig.top || (100 + index * 120),
+            left: left,
+            top: top,
             fontSize: textConfig.fontSize || 32,
             fill: textConfig.fill || '#000000',
             fontFamily: textConfig.fontFamily || 'Inter',
+            fontWeight: textConfig.fontWeight === 'bold' ? 'bold' : 'normal',
+            fontStyle: textConfig.fontStyle === 'italic' ? 'italic' : 'normal',
+            textAlign: textConfig.textAlign || 'center',
             editable: true,
-            width: 600,
+            width: maxWidth,
             splitByGrapheme: true,
             dynamicMinWidth: 100,
           });
           canvas.add(text);
-          if (index === texts.length - 1) {
+          if (index === sortedTexts.length - 1) {
             canvas.setActiveObject(text);
           }
           canvas.renderAll();
+          
+          // Notify parent after all text layers are added
+          if (index === sortedTexts.length - 1 && onCanvasChange) {
+            setTimeout(() => {
+              try {
+                const dataURL = canvas.toDataURL({
+                  format: 'jpeg',
+                  quality: 1,
+                  multiplier: 1,
+                });
+                onCanvasChange(dataURL);
+              } catch (error) {
+                console.error('Error generating canvas data URL after text added:', error);
+              }
+            }, 200);
+          }
         }, 150 * (index + 1));
       });
       
-      setTimeout(() => saveState(), 150 * texts.length + 100);
+      setTimeout(() => saveState(), 150 * sortedTexts.length + 100);
     };
 
     if (canvas && initialImage) {
@@ -328,6 +469,22 @@ const Editor: React.FC<EditorProps> = ({ initialImage, initialText, initialTexts
           canvas.add(img);
           canvas.sendToBack(img);
           canvas.renderAll();
+          
+          // Notify parent of initial canvas state (image loaded)
+          if (onCanvasChange) {
+            setTimeout(() => {
+              try {
+                const dataURL = canvas.toDataURL({
+                  format: 'jpeg',
+                  quality: 1,
+                  multiplier: 1,
+                });
+                onCanvasChange(dataURL);
+              } catch (error) {
+                console.error('Error generating initial canvas data URL:', error);
+              }
+            }, 150);
+          }
           
           // Use initialTexts if provided, otherwise use initialText
           if (initialTexts && initialTexts.length > 0) {

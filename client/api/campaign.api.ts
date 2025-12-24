@@ -14,12 +14,26 @@ export interface CreateCampaignRequest {
   ad_formats: string[];
 }
 
+export interface TextLayer {
+  text: string;
+  type: 'headline' | 'body' | 'cta';
+  fontSize: number;
+  fontFamily: string;
+  fill: string;
+  left: number;
+  top: number;
+  fontWeight: 'normal' | 'bold';
+  fontStyle: 'normal' | 'italic';
+  textAlign: 'left' | 'center' | 'right';
+}
+
 export interface AdCopy {
   headline: string;
   body: string;
   call_to_action: string;
   visual_direction: string;
   image_url?: string;
+  text_layers?: TextLayer[];
 }
 
 export interface CampaignResponse {
@@ -118,4 +132,5 @@ export const generateImageApi = async (campaignId: string) => {
   );
   return response.data;
 };
+
 
