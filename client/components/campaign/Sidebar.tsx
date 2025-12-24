@@ -32,12 +32,12 @@ const sidebarItems: SidebarItem[] = [
     label: 'Profile',
     path: '/profile',
   },
-  {
-    id: 'settings',
-    icon: <Settings />,
-    label: 'Settings',
-    path: '/settings',
-  },
+  // {
+  //   id: 'settings',
+  //   icon: <Settings />,
+  //   label: 'Settings',
+  //   path: '/settings',
+  // },
 ];
 
 // Check if current path matches sidebar item
@@ -122,7 +122,7 @@ export default function Sidebar() {
         backgroundColor: 'transparent',
       }}
     >
-      <div className="relative" ref={notificationRef}>
+      {/* <div className="relative" ref={notificationRef}>
         <button
           type="button"
           onClick={() => setIsNotificationOpen(!isNotificationOpen)}
@@ -225,7 +225,7 @@ export default function Sidebar() {
             </div>
           </div>
         )}
-      </div>
+      </div> */}
       {sidebarItems.map((item) => {
         const isActive = isPathActive(item.path, pathname || '');
         
