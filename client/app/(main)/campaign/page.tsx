@@ -178,7 +178,11 @@ export default function CampaignPage() {
                     key={campaign.id}
                     title={campaign.ad_copy?.call_to_action || ""}
                     description={campaign.ad_copy?.body || 'No description available'}
-                    imagePath={campaign.ad_copy?.image_url ? `${process.env.NEXT_PUBLIC_IMAGE_PREFIX_PATH}${campaign.ad_copy?.image_url}` : ''}
+                    imagePath={campaign.ad_copy?.image_url 
+                      ? (campaign.ad_copy.image_url.startsWith('http') 
+                          ? campaign.ad_copy.image_url 
+                          : `http://localhost:8000${campaign.ad_copy.image_url}`)
+                      : ''}
                   />
                 ))}
             </div>
